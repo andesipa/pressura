@@ -16,11 +16,11 @@ FetchContent_MakeAvailable(JUCE)
 
 juce_add_plugin(OPTO2
     COMPANY_NAME "gueibrielon"
-    BUNDLE_ID com.gueibrielon.opto2
+    BUNDLE_ID com.gueibrielon.pressura
     PLUGIN_MANUFACTURER_CODE Guei
     PLUGIN_CODE Opt2
     FORMATS AU VST3 Standalone
-    PRODUCT_NAME "OPTO-2"
+    PRODUCT_NAME "Pressura"
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
     NEEDS_MIDI_OUTPUT FALSE
@@ -48,3 +48,15 @@ target_link_libraries(OPTO2
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags)
+
+# Renders the editor to a PNG: cmake --build build --target OPTO2Snapshot
+juce_add_console_app(OPTO2Snapshot PRODUCT_NAME "OPTO2Snapshot")
+target_sources(OPTO2Snapshot PRIVATE
+    Tests/Snapshot.cpp
+    Source/PluginProcessor.cpp
+    Source/PluginEditor.cpp)
+target_compile_definitions(OPTO2Snapshot PRIVATE
+    JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JucePlugin_Name="Pressura")
+target_link_libraries(OPTO2Snapshot
+    PRIVATE OPTO2Data juce::juce_audio_utils juce::juce_dsp
+    PUBLIC juce::juce_recommended_config_flags)

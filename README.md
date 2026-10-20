@@ -1,4 +1,4 @@
-# OPTO-2
+# Pressura
 
 Compresor óptico estilo LA-2A con UI basada en el EP-1320 medieval (paleta medida de la foto oficial). AU + VST3 + Standalone (JUCE 8).
 
@@ -26,11 +26,12 @@ cmake --build build --config Release
 El build copia solo los plugins a `~/Library/Audio/Plug-Ins/Components` (AU) y `~/Library/Audio/Plug-Ins/VST3`.
 En Ableton: Preferencias → Plug-ins → "Rescan".
 
-Si macOS lo bloquea: `xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/OPTO-2.vst3`
+Si macOS lo bloquea: `xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/Pressura.vst3`
 
 ## Archivos
 - `Source/OptoCompressor.h` — DSP (sin JUCE, testeable aparte)
 - `Source/PluginProcessor.*` — parámetros y procesamiento
 - `Source/PluginEditor.*` — UI dibujada a mano (colores en `Palette`)
+- `Tests/Snapshot.cpp` — renderiza la UI a PNG sin abrir un DAW: `cmake --build build --target OPTO2Snapshot`, después `build/OPTO2Snapshot_artefacts/Release/OPTO2Snapshot ui.png [vis] [limit]`
 
 Fuente gótica: UnifrakturMaguntia (SIL Open Font License, ver `Resources/OFL.txt`), embebida en el plugin.

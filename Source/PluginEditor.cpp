@@ -258,9 +258,9 @@ void Opto2Editor::drawTopPanel (Graphics& g)
 
     g.setFont (OptoLookAndFeel::gothic (44.0f));
     g.setColour (Palette::red);
-    g.drawText ("O", 14, 12, 40, 50, Justification::centredLeft);
+    g.drawText ("P", 14, 12, 40, 50, Justification::centredLeft);
     g.setColour (Palette::keyCream);
-    g.drawText ("pto-2", 44, 12, 180, 50, Justification::centredLeft);
+    g.drawText ("ressura", 42, 12, 180, 50, Justification::centredLeft);
 
     g.setFont (OptoLookAndFeel::gothic (18.0f));
     g.drawText ("amplificator opticus", 14, 84, 250, 24, Justification::centredLeft);
@@ -425,7 +425,7 @@ String Opto2Editor::valueText (int param) const
 String Opto2Editor::nameText (int param) const
 {
     static const char* names[] = { "RED", "SPD", "OUT", "MIX" };
-    if (param < 0)  return "OPT";
+    if (param < 0)  return "PRS";
     if (param == 0 && visOn()) return "DRV";
     if (param == 4) return lastValues[4] > 0.5f ? "LMT" : "CMP";
     if (param == 5) return visOn() ? "VIS" : "CLN";
