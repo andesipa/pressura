@@ -134,7 +134,7 @@ Opto2Editor::Opto2Editor (Opto2Processor& p)
 {
     setLookAndFeel (&lnf);
 
-    for (auto* k : { &peakKnob, &attackKnob, &outputKnob })
+    for (auto* k : { &peakKnob, &speedKnob, &outputKnob })
     {
         k->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
         k->setTextBoxStyle (Slider::NoTextBox, false, 0, 0);
@@ -145,8 +145,8 @@ Opto2Editor::Opto2Editor (Opto2Processor& p)
     // Mismas combinaciones que las perillas del aparato
     peakKnob.setColour   (Slider::thumbColourId, Palette::red);        // "pulsus"
     peakKnob.setColour   (Slider::rotarySliderFillColourId, Palette::keyCream);
-    attackKnob.setColour (Slider::thumbColourId, Palette::knobBrown);  // "metrum"
-    attackKnob.setColour (Slider::rotarySliderFillColourId, Palette::keyCream);
+    speedKnob.setColour (Slider::thumbColourId, Palette::knobBrown);  // "metrum"
+    speedKnob.setColour (Slider::rotarySliderFillColourId, Palette::keyCream);
     outputKnob.setColour (Slider::thumbColourId, Palette::knobCream);  // "magnitudo"
     outputKnob.setColour (Slider::rotarySliderFillColourId, Palette::ink);
 
@@ -155,12 +155,12 @@ Opto2Editor::Opto2Editor (Opto2Processor& p)
     addAndMakeVisible (mixFader);
 
     peakAtt   = std::make_unique<SliderAttachment> (proc.apvts, "peak",   peakKnob);
-    attackAtt = std::make_unique<SliderAttachment> (proc.apvts, "attack", attackKnob);
+    speedAtt  = std::make_unique<SliderAttachment> (proc.apvts, "speed",  speedKnob);
     outputAtt = std::make_unique<SliderAttachment> (proc.apvts, "output", outputKnob);
     mixAtt    = std::make_unique<SliderAttachment> (proc.apvts, "mix",    mixFader);
 
     peakKnob.setDoubleClickReturnValue   (true, 40.0);
-    attackKnob.setDoubleClickReturnValue (true, 10.0);
+    speedKnob.setDoubleClickReturnValue (true, 50.0);
     outputKnob.setDoubleClickReturnValue (true, 0.0);
     mixFader.setDoubleClickReturnValue   (true, 100.0);
 
@@ -168,6 +168,9 @@ Opto2Editor::Opto2Editor (Opto2Processor& p)
     limitKey.onClick = [this] { setLimit (true);  };
     addAndMakeVisible (compKey);
     addAndMakeVisible (limitKey);
+
+    visKey.onClick = [this] { toggleVis(); };
+    addAndMakeVisible (visKey);
 
     for (int i = 0; i < numTracked; ++i)
         lastValues[i] = proc.apvts.getRawParameterValue (trackedIds[i])->load();
@@ -191,10 +194,22 @@ void Opto2Editor::setLimit (bool shouldLimit)
     }
 }
 
+void Opto2Editor::toggleVis()
+{
+    if (auto* param = proc.apvts.getParameter ("vis"))
+    {
+        param->beginChangeGesture();
+        param->setValueNotifyingHost (visOn() ? 0.0f : 1.0f);
+        param->endChangeGesture();
+    }
+}
+
 void Opto2Editor::timerCallback()
 {
     const float gr = proc.meterGrDb.load();
     shownGr = gr > shownGr ? gr : shownGr * 0.88f + gr * 0.12f;
+
+    const bool wasVis = visOn();
 
     // Detecta qué parámetro se movió (desde la UI o por automatización del host)
     for (int i = 0; i < numTracked; ++i)
@@ -211,8 +226,10 @@ void Opto2Editor::timerCallback()
     const bool limit = lastValues[4] > 0.5f;
     compKey.setToggleState  (! limit, dontSendNotification);
     limitKey.setToggleState (limit,   dontSendNotification);
+    visKey.setToggleState   (visOn(), dontSendNotification);
 
-    repaint (displayArea.toNearestInt());
+    if (visOn() != wasVis) repaint();   // cambia la serigrafía de la perilla roja
+    else                   repaint (displayArea.toNearestInt());
 }
 
 void Opto2Editor::resized()
@@ -221,13 +238,15 @@ void Opto2Editor::resized()
 
     const int knobY = 254, knobS = 100;
     peakKnob.setBounds   (86,  knobY, knobS, knobS);
-    attackKnob.setBounds (188, knobY, knobS, knobS);
+    speedKnob.setBounds (188, knobY, knobS, knobS);
     outputKnob.setBounds (285, knobY, knobS, knobS);
 
     mixFader.setBounds (10, 258, 50, 190);
 
     compKey.setBounds  (96,  382, 136, 62);
     limitKey.setBounds (244, 382, 136, 62);
+
+    visKey.setBounds (204, 18, 58, 44);
 }
 
 void Opto2Editor::drawTopPanel (Graphics& g)
@@ -275,8 +294,8 @@ void Opto2Editor::paint (Graphics& g)
     {
         g.drawText (txt, s.getX(), s.getY() - 22, s.getWidth(), 20, Justification::centred);
     };
-    labelOver (peakKnob,   "reductio");
-    labelOver (attackKnob, "impetus");
+    labelOver (peakKnob,   visOn() ? "vis" : "reductio");
+    labelOver (speedKnob, "impetus");
     labelOver (outputKnob, "exitus");
 
     // Fader
@@ -326,7 +345,8 @@ namespace
             case 'A': return 119; case 'C': return 57;  case 'D': return 94;  case 'E': return 121;
             case 'I': return 6;   case 'K': return 117; case 'L': return 56;  case 'M': return 55;
             case 'O': return 63;  case 'P': return 115; case 'R': return 80;  case 'T': return 120;
-            case 'U': return 62;  case 'X': return 118; case 'S': return 109;
+            case 'U': return 62;  case 'X': return 118; case 'S': return 109; case 'V': return 28;
+            case 'N': return 84;
             default:  return 0;
         }
     }
@@ -394,19 +414,21 @@ String Opto2Editor::valueText (int param) const
     switch (param)
     {
         case 0:  return String (roundToInt (v));                                   // reductio 0–100
-        case 1:  return v >= 99.95f ? String ("100") : String (v, 1);              // impetus ms
+        case 1:  return String (roundToInt (v));                                   // impetus (speed) 0–100
         case 2:  if (std::abs (v) < 0.05f) return "0.0";                           // exitus dB
                  return std::abs (v) < 9.95f ? String (v, 1) : String (roundToInt (v));
         case 3:  return String (roundToInt (v));                                   // mixtura %
-        default: return lastValues[4] > 0.5f ? "LMT" : "CMP";
+        default: return nameText (param);
     }
 }
 
 String Opto2Editor::nameText (int param) const
 {
-    static const char* names[] = { "RED", "ATK", "OUT", "MIX" };
+    static const char* names[] = { "RED", "SPD", "OUT", "MIX" };
     if (param < 0)  return "OPT";
+    if (param == 0 && visOn()) return "DRV";
     if (param == 4) return lastValues[4] > 0.5f ? "LMT" : "CMP";
+    if (param == 5) return visOn() ? "VIS" : "CLN";
     return names[param];
 }
 
@@ -416,7 +438,7 @@ void Opto2Editor::drawDisplay (Graphics& g, Rectangle<float> r)
     g.fillRect (r);
 
     // Mientras se mueve: dígitos. 2 s después de soltar: letras del parámetro.
-    const bool moving = activeParam >= 0 && activeParam != 4
+    const bool moving = activeParam >= 0 && activeParam < 4
                         && Time::getMillisecondCounterHiRes() - lastChangeMs < 2000.0;
     const String txt = moving ? valueText (activeParam) : nameText (activeParam);
 
@@ -446,6 +468,8 @@ void Opto2Editor::drawDisplay (Graphics& g, Rectangle<float> r)
     g.setFont (OptoLookAndFeel::mono (10.0f));
     g.setColour (Palette::led.withAlpha (0.8f));
     g.drawText ("GR", Rectangle<float> (meter.getX(), r.getY() + 12.0f, 40.0f, 14.0f).toNearestInt(), Justification::centredLeft);
+    g.setColour (visOn() ? Palette::led : Palette::led.withAlpha (0.18f));
+    g.drawText ("VIS", Rectangle<float> (meter.getRight() - 40.0f, r.getY() + 12.0f, 40.0f, 14.0f).toNearestInt(), Justification::centredRight);
 
     const int segs = 20;
     const float segW = meter.getWidth() / (float) segs;

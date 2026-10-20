@@ -40,7 +40,8 @@ private:
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Multiplicative> outSmoothed;
 
     std::atomic<float>* peakParam  = nullptr;
-    std::atomic<float>* attackParam = nullptr;
+    std::atomic<float>* speedParam  = nullptr;
+    std::atomic<float>* driveParam  = nullptr;
     std::atomic<float>* mixParam   = nullptr;
     std::atomic<float>* limitParam = nullptr;
     std::atomic<float>* outputParam = nullptr;

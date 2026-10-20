@@ -4,11 +4,12 @@ Compresor óptico estilo LA-2A con UI basada en el EP-1320 medieval (paleta medi
 
 ## Controles
 - **reductio** (perilla roja) = Peak Reduction: umbral -6 a -48 dB + makeup automático 0 a +9 dB.
-- **impetus** (perilla marrón) = Attack: 0.5–100 ms. Centro = 10 ms (el ataque fijo del LA-2A).
+- **impetus** (perilla marrón) = Speed 0–100: mueve ataque, release y detector juntos. 50 = el opto original (ataque 10 ms). Abajo: más lento y suave (ataque ~30 ms). Arriba: se apaga la memoria óptica, el detector pasa a pico y bombea (ataque ~0.3 ms, release ~30 ms).
 - **exitus** (perilla crema) = Output: -18 a +18 dB, después de la mezcla.
 - **mixtura** (fader vertical) = Mix dry/wet para compresión paralela.
 - **compressio / limes** (teclas) = ratio ~3:1 o ~10:1.
-- Visor de 3 dígitos: muestra el valor mientras movés un control y, 2 s después de soltarlo, el nombre (RED, ATK, OUT, MIX). Las teclas muestran CMP / LMT.
+- **vis** (tecla en el panel verde) = modo de entrada. Apagada (CLN): la perilla roja es Peak Reduction. Encendida (VIS): la perilla roja pasa a **vis** = Drive, 0 a +24 dB contra un umbral fijo de -12 dB; lo fuerte queda igual y lo suave sube.
+- Visor de 3 dígitos: muestra el valor mientras movés un control y, 2 s después de soltarlo, el nombre (RED o DRV, SPD, OUT, MIX). Las teclas muestran CMP / LMT y VIS / CLN.
 - Doble click en cualquier control = valor por defecto.
 
 Release: de dos etapas y dependiente del programa (~50% suelta en ~60 ms, el resto en 1–3 s).
