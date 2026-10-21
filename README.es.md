@@ -163,4 +163,5 @@ El script explica cómo firmarlo y notarizarlo si tenés una cuenta de Apple Dev
 ---
 
 Fuente gótica: UnifrakturMaguntia, SIL Open Font License (`Resources/OFL.txt`), embebida en el plugin.
-Hecho por @gueibrielon.
+Hecho por @gueibrielon. Gratis para bajar y usar en tu música, incluso en lanzamientos comerciales.
+El código fuente es de uso reservado; ver [LICENSE](LICENSE).

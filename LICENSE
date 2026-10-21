@@ -1,0 +1,25 @@
+Pressura
+Copyright (c) 2026 gueibrielon. All rights reserved.
+
+THE PLUGIN
+You may download the released installers of Pressura free of charge and use the
+plugin to make music, including commercial releases, without restriction.
+You may not sell, re-upload or redistribute the installers or plugin files
+yourself; share a link to the official release page instead.
+
+THE SOURCE CODE
+The source code in this repository is published so people can see how Pressura
+works. It is not open source: you may read it and build it for your own personal
+use, but you may not copy, modify, publish, distribute or sell it, or any part of
+it, without written permission from the author.
+
+NO WARRANTY
+Pressura is provided "as is", without warranty of any kind. The author is not
+liable for any claim, damage or other liability arising from its use.
+
+THIRD-PARTY COMPONENTS
+- JUCE (https://juce.com), used under the JUCE 8 Starter licence.
+- VST3 SDK by Steinberg Media Technologies GmbH. VST is a registered trademark
+  of Steinberg Media Technologies GmbH.
+- UnifrakturMaguntia font, licensed under the SIL Open Font License 1.1;
+  see Resources/OFL.txt.

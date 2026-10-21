@@ -163,4 +163,5 @@ The script explains how to sign and notarize it if you have an Apple Developer a
 ---
 
 Blackletter font: UnifrakturMaguntia, SIL Open Font License (`Resources/OFL.txt`), embedded in the plugin.
-Made by @gueibrielon.
+Made by @gueibrielon. Free to download and use in your music, including commercial releases.
+The source code is all rights reserved; see [LICENSE](LICENSE).
