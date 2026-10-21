@@ -1,7 +1,7 @@
 # Pressura
 
 *amplificator opticus* — an optical-style compressor with a one-knob speed control and a drive mode.
-AU · VST3 · Standalone · macOS 11+ (Intel and Apple Silicon)
+VST3 · AU · Standalone · Windows 10/11 (64-bit) · macOS 11+ (Intel and Apple Silicon)
 
 [Leer en español](README.es.md)
 
@@ -14,6 +14,21 @@ press **vis** and the red knob stops lowering a threshold and starts *driving* t
 ---
 
 ## Installing
+
+Download the latest installer from the **Releases** page.
+
+### Windows
+
+1. Download **`Pressura-<version>-Windows-Setup.exe`** and double-click it.
+2. Windows will say *"Windows protected your PC"*, because Pressura isn't signed with a paid certificate.
+   Click **More info** → **Run anyway**. This only happens once.
+3. Follow the installer. It puts the VST3 in `C:\Program Files\Common Files\VST3` and the Standalone app in
+   `C:\Program Files\Pressura`, with a Start menu shortcut.
+4. Rescan plugins in your DAW. It appears as **Pressura** by **gueibrielon**.
+
+**Uninstall:** *Settings → Apps → Pressura → Uninstall*.
+
+### macOS
 
 1. Download **`Pressura-<version>.pkg`** and double-click it.
 2. macOS will say it can't verify the developer, because Pressura isn't signed with a paid Apple account.
@@ -127,7 +142,14 @@ With Xcode installed you can use `cmake -B build -G Xcode && cmake --build build
 The build is universal (arm64 + x86_64) and copies the AU and VST3 straight into `~/Library/Audio/Plug-Ins`.
 Validate the AU with `auval -v aufx Opt2 Guei`.
 
-To build the installer: `./tools/make_installer.sh` → `build/installer/Pressura-<version>.pkg`.
+**Windows:** Visual Studio 2022 ("Desktop development with C++") and CMake, then
+`cmake -B build -G "Visual Studio 17 2022" -A x64` and `cmake --build build --config Release`.
+The Windows installer is built with [Inno Setup](https://jrsoftware.org/isinfo.php): `iscc /DAppVersion=<version> tools\installer\pressura.iss`.
+
+**Releases:** pushing a tag like `v0.1.0` makes GitHub Actions build both installers and publish them
+(`.github/workflows/release.yml`).
+
+To build the macOS installer: `./tools/make_installer.sh` → `build/installer/Pressura-<version>.pkg`.
 The script explains how to sign and notarize it if you have an Apple Developer account.
 
 ### Project files

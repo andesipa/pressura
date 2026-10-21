@@ -1,0 +1,89 @@
+# Builds the Windows and macOS installers. Pushing a tag like v0.1.0 also publishes
+# them as a GitHub Release; "Run workflow" on the Actions tab just builds them.
+name: Build installers
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -B build -G "Visual Studio 17 2022" -A x64 -DPRESSURA_COPY_PLUGINS=OFF
+
+      - name: Build
+        run: cmake --build build --config Release --target OPTO2_VST3 OPTO2_Standalone --parallel
+
+      - name: Validate VST3 with pluginval
+        shell: pwsh
+        run: |
+          Invoke-WebRequest https://github.com/Tracktion/pluginval/releases/latest/download/pluginval_Windows.zip -OutFile pluginval.zip
+          Expand-Archive pluginval.zip -DestinationPath pluginval
+          .\pluginval\pluginval.exe --strictness-level 5 --skip-gui-tests --validate "build\OPTO2_artefacts\Release\VST3\Pressura.vst3"
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $version = (Select-String -Path CMakeLists.txt -Pattern 'project\(OPTO2 VERSION ([0-9.]+)\)').Matches[0].Groups[1].Value
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress }
+          & $iscc "/DAppVersion=$version" tools\installer\pressura.iss
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: build/installer/*.exe
+
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --target OPTO2_AU OPTO2_VST3 OPTO2_Standalone -j4
+
+      - name: Validate AU with auval
+        run: |
+          killall -9 AudioComponentRegistrar 2>/dev/null || true
+          auval -v aufx Opt2 Guei
+
+      - name: Build installer
+        run: ./tools/make_installer.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-installer
+          path: build/installer/*.pkg
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sed "s|__REPO__|$GITHUB_REPOSITORY|g" .github/release-notes.md > notes.md
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --title "Pressura ${GITHUB_REF_NAME#v}" \
+            --notes-file notes.md

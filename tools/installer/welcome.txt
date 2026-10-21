@@ -1,0 +1,13 @@
+Pressura - amplificator opticus
+An optical-style compressor with a one-knob speed control and a drive mode.
+
+This installs:
+  - the VST3 plugin in C:\Program Files\Common Files\VST3
+    (Ableton, FL Studio, Reaper, Cubase, Bitwig...)
+  - the Standalone app, with a Start menu shortcut
+
+When it finishes, rescan plugins in your DAW. Pressura appears under "gueibrielon".
+
+------------------------------------------------------------
+Instala el plugin VST3 y la app Standalone. Al terminar, volve
+a escanear los plugins en tu DAW.

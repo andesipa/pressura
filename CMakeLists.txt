@@ -7,6 +7,15 @@ project(OPTO2 VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
+# Copy the plugins into the system plug-in folders after building (off on CI)
+option(PRESSURA_COPY_PLUGINS "Copy AU/VST3 to the plug-in folders after building" ON)
+
+if(APPLE)
+    set(PRESSURA_FORMATS AU VST3 Standalone)
+else()
+    set(PRESSURA_FORMATS VST3 Standalone)
+endif()
+
 include(FetchContent)
 FetchContent_Declare(JUCE
     GIT_REPOSITORY https://github.com/juce-framework/JUCE.git
@@ -19,14 +28,14 @@ juce_add_plugin(OPTO2
     BUNDLE_ID com.gueibrielon.pressura
     PLUGIN_MANUFACTURER_CODE Guei
     PLUGIN_CODE Opt2
-    FORMATS AU VST3 Standalone
+    FORMATS ${PRESSURA_FORMATS}
     PRODUCT_NAME "Pressura"
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
     NEEDS_MIDI_OUTPUT FALSE
     IS_MIDI_EFFECT FALSE
     EDITOR_WANTS_KEYBOARD_FOCUS FALSE
-    COPY_PLUGIN_AFTER_BUILD TRUE)
+    COPY_PLUGIN_AFTER_BUILD ${PRESSURA_COPY_PLUGINS})
 
 juce_add_binary_data(OPTO2Data SOURCES Resources/UnifrakturMaguntia.ttf)
 
