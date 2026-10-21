@@ -69,3 +69,15 @@ target_compile_definitions(OPTO2Snapshot PRIVATE
 target_link_libraries(OPTO2Snapshot
     PRIVATE OPTO2Data juce::juce_audio_utils juce::juce_dsp
     PUBLIC juce::juce_recommended_config_flags)
+
+# Offline sidechain/EQ test: cmake --build build --target OPTO2SidechainTest
+juce_add_console_app(OPTO2SidechainTest PRODUCT_NAME "OPTO2SidechainTest")
+target_sources(OPTO2SidechainTest PRIVATE
+    Tests/SidechainTest.cpp
+    Source/PluginProcessor.cpp
+    Source/PluginEditor.cpp)
+target_compile_definitions(OPTO2SidechainTest PRIVATE
+    JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JucePlugin_Name="Pressura")
+target_link_libraries(OPTO2SidechainTest
+    PRIVATE OPTO2Data juce::juce_audio_utils juce::juce_dsp
+    PUBLIC juce::juce_recommended_config_flags)

@@ -1,6 +1,7 @@
 #pragma once
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "OptoCompressor.h"
+#include "SidechainEQ.h"
 
 class Opto2Processor : public juce::AudioProcessor
 {
@@ -36,6 +37,7 @@ public:
 
 private:
     OptoCompressor comp;
+    SidechainEQ scEq;
     juce::SmoothedValue<float> mixSmoothed;
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Multiplicative> outSmoothed;
 
@@ -45,6 +47,10 @@ private:
     std::atomic<float>* mixParam   = nullptr;
     std::atomic<float>* limitParam = nullptr;
     std::atomic<float>* outputParam = nullptr;
+    std::atomic<float>* extParam    = nullptr;
+    std::atomic<float>* lowParam    = nullptr;
+    std::atomic<float>* midParam    = nullptr;
+    std::atomic<float>* highParam   = nullptr;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Opto2Processor)
 };

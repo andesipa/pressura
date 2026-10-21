@@ -60,6 +60,10 @@ No hace falta la Terminal: macOS no bloquea los plugins que instala el .pkg.
 | tecla **compressio** | Ratio de alrededor de 3:1 con knee suave de 8 dB. Musical, para nivelar. | | prendida |
 | tecla **limes** | Ratio de alrededor de 10:1 con knee de 3 dB. Para agarrar picos o aplastar. | | apagada |
 | tecla **vis** (panel de arriba) | Cambia la perilla roja entre **reductio** (limpio) y **vis** (drive). La serigrafía de la perilla cambia con ella. | | apagada |
+| tecla **alius** (*fons*, "fuente") | Apagada: Pressura escucha su propia pista. Prendida: escucha la pista que ruteás a su entrada de **sidechain** (ver abajo). | | apagada |
+| **gravis** (graves, 40–200 Hz) | Cuánto disparan la compresión los graves de la fuente. | OFF, −24 a +12 dB | 0 dB |
+| **medius** (medios, 200 Hz–1 kHz) | Cuánto disparan la compresión los medios. | OFF, −24 a +12 dB | 0 dB |
+| **acutus** (agudos, 1–20 kHz) | Cuánto disparan la compresión los agudos. | OFF, −24 a +12 dB | 0 dB |
 
 **Doble click** en cualquier perilla o en el fader lo vuelve a su valor por defecto.
 
@@ -77,12 +81,35 @@ dos etapas. La mitad de la reducción se suelta rápido; el resto tarda segundos
 estuvo comprimiendo, más lenta la cola. Arriba de 50 esa "memoria" lenta se va apagando y el detector pasa de
 nivel promedio a nivel de pico, así que el compresor sigue cada golpe y bombea.
 
+### Sidechain y el EQ del disparo
+
+La fila de abajo decide **qué hace comprimir a Pressura**. Las tres perillas verdes son un EQ sobre la señal
+que el compresor *escucha*, no sobre el sonido que oís: siempre se comprime la pista entera.
+
+- Las tres en 0 dB (derechas): sin cambio, el compresor escucha la señal completa.
+- Bajá una perilla del todo (**OFF**) para que esa banda se ignore por completo.
+- Ejemplo: Pressura en un bajo, disparado por el bus de batería. Prendé **alius**, poné **gravis** en +6 dB y
+  **medius** y **acutus** en OFF: solo el bombo hace bajar el bajo; el redoblante y los hats no.
+- Sin **alius**, las mismas perillas moldean tu propia pista: bajá **gravis** para que un grave pesado no
+  haga bombear toda la mezcla, o subí **acutus** para domar agudos ásperos.
+
+**Cómo rutear la pista que dispara** (la elegís en tu DAW, no en el plugin), y después prendé **alius**:
+- **Ableton Live:** abrí la sección Sidechain del dispositivo Pressura (el triangulito en su barra de título) y elegí la pista en *Audio From*.
+- **Logic Pro:** elegí la pista en el menú **Side Chain** arriba de la ventana del plugin.
+- **FL Studio:** en el insert de la pista que dispara, click derecho en la flecha hacia el insert de Pressura → *Sidechain to this track*; después en el wrapper de Pressura (pestaña *Processing*) elegí la entrada de sidechain.
+- **Reaper:** agregá un send desde la pista que dispara a la pista de Pressura en los canales 3/4.
+- **Cubase:** tocá el botón de sidechain arriba de la ventana del plugin y agregá la pista como fuente de side-chain.
+
+Si **alius** está prendida pero no ruteaste nada, Pressura no tiene qué escuchar y no comprime.
+
 ### El visor
 
 - En reposo muestra **PRS**.
 - Mientras movés un control muestra el valor. **2 segundos** después de soltarlo, muestra el nombre:
-  **RED** (reductio) o **DRV** (vis), **SPD** (impetus), **OUT** (exitus), **MIX** (mixtura).
-- Las teclas muestran **CMP** / **LMT** y **VIS** / **CLN** al apretarlas.
+  **RED** (reductio) o **DRV** (vis), **SPD** (impetus), **OUT** (exitus), **MIX** (mixtura),
+  **LO** / **MID** / **HI** (gravis / medius / acutus; una banda bajada del todo muestra **OFF**).
+- Las teclas muestran **CMP** / **LMT**, **VIS** / **CLN** y **EXT** / **INT** al apretarlas.
+- **EXT** arriba del medidor se prende mientras la entrada de sidechain es la que dispara.
 - Medidor **GR**: cuánto se está reduciendo el nivel en este momento, de 0 a 20 dB. Los indicadores
   *compressio* / *limes* y **VIS** muestran los modos activos.
 
@@ -93,7 +120,10 @@ nivel promedio a nivel de pico, así que el compresor sigue cada golpe y bombea.
 ```mermaid
 flowchart LR
     IN([Entrada]) --> DRV["drive vis<br/>0 a +24 dB<br/>(solo con vis prendida)"]
-    DRV --> DET["Detector<br/>estéreo enlazado<br/>RMS → pico con impetus"]
+    SC([Entrada de sidechain]) -. alius prendida .-> SRC
+    DRV -- alius apagada --> SRC["Fuente del disparo"]
+    SRC --> EQ["EQ del disparo<br/>gravis · medius · acutus<br/>cortes en 200 Hz / 1 kHz"]
+    EQ --> DET["Detector<br/>estéreo enlazado<br/>RMS → pico con impetus"]
     DET --> GC["Curva<br/>umbral · ratio · knee<br/>compressio 3:1 / limes 10:1"]
     GC --> REL["Ataque / release de dos etapas<br/>según impetus"]
     REL --> VCA["Ganancia + compensación"]
@@ -108,6 +138,9 @@ flowchart LR
   dinámica y no de volumen. En modo *vis* la compensación es −drive ÷ ratio: lo que está muy por encima del
   umbral sale más o menos igual de fuerte que como entró, y todo lo más suave sube.
 - La **señal seca** de la mezcla *mixtura* es siempre tu entrada original, nunca la empujada.
+- **EQ del disparo:** cortes Linkwitz-Riley de 4.º orden, así con las tres bandas en 0 dB la suma es plana;
+  justo en 0 dB el EQ se saltea y Pressura suena igual que sin él.
+- La **entrada de sidechain** pasa por el mismo drive (en modo *vis*) y el mismo EQ que tu propia señal.
 - Sin latencia, sin oversampling, sin lookahead.
 
 ---
@@ -121,6 +154,8 @@ flowchart LR
 | Bus de batería que bombea | **vis** | vis 50–70 | 80–100 | compressio | 60–80 % |
 | Aplastado en paralelo | limpio | reductio 80–100 | 70–90 | limes | 20–40 % |
 | Fuerte y denso | **vis** | vis 60–90 | 50–70 | limes | 100 %, bajá exitus |
+| Bajo que se agacha con el bombo | limpio, **alius** desde la batería | reductio 50–70 | 75–90 | compressio | 100 %; gravis +6, medius/acutus OFF |
+| Bus master que no bombea con el grave | limpio | reductio 20–30 | 40–50 | compressio | 100 %; gravis −12 |
 
 Con *vis* alto e *impetus* bajo, los transitorios pasan antes de que el compresor reaccione y pueden llegar a
 0 dBFS. Bajá **exitus** o poné un limitador después de Pressura.
@@ -156,9 +191,12 @@ El script explica cómo firmarlo y notarizarlo si tenés una cuenta de Apple Dev
 - `Source/OptoCompressor.h` — el DSP, sin dependencia de JUCE, se puede testear aparte
 - `Source/PluginProcessor.*` — parámetros y procesamiento de audio
 - `Source/PluginEditor.*` — la UI dibujada a mano (colores en `Palette`)
+- `Source/SidechainEQ.h` — el EQ del disparo, sin dependencia de JUCE
+- `Tests/SidechainTest.cpp` — corre el plugin offline con entrada de sidechain y verifica el ruteo y el EQ:
+  `cmake --build build --target OPTO2SidechainTest`, después `build/OPTO2SidechainTest_artefacts/Release/OPTO2SidechainTest`
 - `Tests/Snapshot.cpp` — renderiza la UI a PNG sin abrir un DAW:
   `cmake --build build --target OPTO2Snapshot`, después
-  `build/OPTO2Snapshot_artefacts/Release/OPTO2Snapshot ui.png [vis] [limit]`
+  `build/OPTO2Snapshot_artefacts/Release/OPTO2Snapshot ui.png [vis] [limit] [ext]`
 
 ---
 

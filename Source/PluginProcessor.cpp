@@ -3,8 +3,9 @@
 
 Opto2Processor::Opto2Processor()
     : AudioProcessor (BusesProperties()
-                        .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
-                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
+                        .withInput  ("Input",     juce::AudioChannelSet::stereo(), true)
+                        .withOutput ("Output",    juce::AudioChannelSet::stereo(), true)
+                        .withInput  ("Sidechain", juce::AudioChannelSet::stereo(), true)),
       apvts (*this, nullptr, "PARAMS", createLayout())
 {
     peakParam   = apvts.getRawParameterValue ("peak");
@@ -13,6 +14,10 @@ Opto2Processor::Opto2Processor()
     mixParam    = apvts.getRawParameterValue ("mix");
     limitParam  = apvts.getRawParameterValue ("limit");
     outputParam = apvts.getRawParameterValue ("output");
+    extParam    = apvts.getRawParameterValue ("ext");
+    lowParam    = apvts.getRawParameterValue ("low");
+    midParam    = apvts.getRawParameterValue ("mid");
+    highParam   = apvts.getRawParameterValue ("high");
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout Opto2Processor::createLayout()
@@ -48,6 +53,18 @@ juce::AudioProcessorValueTreeState::ParameterLayout Opto2Processor::createLayout
     layout.add (std::make_unique<AudioParameterBool> (
         ParameterID { "vis", 1 }, "Drive Mode", false));
 
+    // El detector escucha la entrada de sidechain (otra pista) en vez de la propia
+    layout.add (std::make_unique<AudioParameterBool> (
+        ParameterID { "ext", 1 }, "External Sidechain", false));
+
+    // EQ de la señal del detector: cuánto dispara la compresión cada banda (en el mínimo, apagada)
+    NormalisableRange<float> eqRange (SidechainEQ::minDb, SidechainEQ::maxDb, 0.1f);
+    eqRange.setSkewForCentre (0.0f);   // 0 dB con la perilla derecha
+    for (auto [id, name] : { std::pair { "low", "Sidechain Low" }, { "mid", "Sidechain Mid" }, { "high", "Sidechain High" } })
+        layout.add (std::make_unique<AudioParameterFloat> (
+            ParameterID { id, 1 }, name, eqRange, 0.0f,
+            AudioParameterFloatAttributes().withLabel ("dB")));
+
     return layout;
 }
 
@@ -56,7 +73,16 @@ bool Opto2Processor::isBusesLayoutSupported (const BusesLayout& layouts) const
     const auto out = layouts.getMainOutputChannelSet();
     if (out != juce::AudioChannelSet::mono() && out != juce::AudioChannelSet::stereo())
         return false;
-    return out == layouts.getMainInputChannelSet();
+    if (out != layouts.getMainInputChannelSet())
+        return false;
+
+    if (layouts.inputBuses.size() > 1)
+    {
+        const auto sc = layouts.getChannelSet (true, 1);
+        if (! sc.isDisabled() && sc != juce::AudioChannelSet::mono() && sc != juce::AudioChannelSet::stereo())
+            return false;
+    }
+    return true;
 }
 
 void Opto2Processor::prepareToPlay (double sampleRate, int)
@@ -67,6 +93,8 @@ void Opto2Processor::prepareToPlay (double sampleRate, int)
     comp.setLimitMode (limitParam->load() > 0.5f);
     comp.setDriveMode (driveParam->load() > 0.5f);
     comp.prepare (sampleRate);
+    scEq.setGainsDb (lowParam->load(), midParam->load(), highParam->load());
+    scEq.prepare (sampleRate);
     mixSmoothed.reset (sampleRate, 0.03);
     mixSmoothed.setCurrentAndTargetValue (mixParam->load() * 0.01f);
     outSmoothed.reset (sampleRate, 0.03);
@@ -77,7 +105,7 @@ void Opto2Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiB
 {
     juce::ScopedNoDenormals noDenormals;
 
-    for (auto ch = getTotalNumInputChannels(); ch < getTotalNumOutputChannels(); ++ch)
+    for (auto ch = getMainBusNumInputChannels(); ch < getMainBusNumOutputChannels(); ++ch)
         buffer.clear (ch, 0, buffer.getNumSamples());
 
     comp.setPeakReduction (peakParam->load());
@@ -86,10 +114,24 @@ void Opto2Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiB
     comp.setLimitMode (limitParam->load() > 0.5f);
     mixSmoothed.setTargetValue (mixParam->load() * 0.01f);
     outSmoothed.setTargetValue (juce::Decibels::decibelsToGain (outputParam->load()));
+    scEq.setGainsDb (lowParam->load(), midParam->load(), highParam->load());
 
-    const int numCh = juce::jmin (2, buffer.getNumChannels());
-    float* l = buffer.getWritePointer (0);
-    float* r = numCh > 1 ? buffer.getWritePointer (1) : nullptr;
+    auto main = getBusBuffer (buffer, false, 0);
+    float* l = main.getWritePointer (0);
+    float* r = main.getNumChannels() > 1 ? main.getWritePointer (1) : nullptr;
+
+    // Detector: la propia pista, o la de sidechain si "alius" está prendida y el host la conectó
+    const float* scL = l;
+    const float* scR = r;
+    if (extParam->load() > 0.5f && getBusCount (true) > 1 && getBus (true, 1)->isEnabled())
+    {
+        auto side = getBusBuffer (buffer, true, 1);
+        if (side.getNumChannels() > 0)
+        {
+            scL = side.getReadPointer (0);
+            scR = side.getNumChannels() > 1 ? side.getReadPointer (1) : nullptr;
+        }
+    }
 
     float blockMaxGr = 0.0f;
 
@@ -98,7 +140,12 @@ void Opto2Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiB
         const float dryL = l[i];
         const float dryR = r != nullptr ? r[i] : dryL;
 
-        const float g   = comp.process (dryL, dryR);
+        // El detector lee antes de escribir la salida: con sidechain propio, scL apunta a l
+        float detL = scL[i];
+        float detR = scR != nullptr ? scR[i] : detL;
+        scEq.process (detL, detR);
+
+        const float g   = comp.process (detL, detR);
         const float mix = mixSmoothed.getNextValue();
         const float out = outSmoothed.getNextValue();
 

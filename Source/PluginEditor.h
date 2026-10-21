@@ -60,23 +60,26 @@ private:
     void drawTopPanel (juce::Graphics&);
     void drawDisplay  (juce::Graphics&, juce::Rectangle<float>);
     void setLimit (bool shouldLimit);
-    void toggleVis();
+    void toggle (const char* paramId, bool isOn);
     bool visOn() const { return lastValues[5] > 0.5f; }
+    bool extOn() const { return lastValues[9] > 0.5f; }
 
     Opto2Processor& proc;
     OptoLookAndFeel lnf;
 
     juce::Slider peakKnob, speedKnob, outputKnob, mixFader;
-    juce::TextButton compKey { "compressio" }, limitKey { "limes" }, visKey { "vis" };
+    juce::Slider lowKnob, midKnob, highKnob;   // EQ del sidechain
+    juce::TextButton compKey { "compressio" }, limitKey { "limes" }, visKey { "vis" }, extKey { "alius" };
 
     using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
-    std::unique_ptr<SliderAttachment> peakAtt, speedAtt, outputAtt, mixAtt;
+    std::unique_ptr<SliderAttachment> peakAtt, speedAtt, outputAtt, mixAtt, lowAtt, midAtt, highAtt;
 
     juce::String valueText (int param) const;
     juce::String nameText  (int param) const;
 
-    static constexpr int numTracked = 6;
-    static constexpr const char* trackedIds[numTracked] = { "peak", "speed", "output", "mix", "limit", "vis" };
+    static constexpr int numTracked = 10;
+    static constexpr const char* trackedIds[numTracked] = { "peak", "speed", "output", "mix", "limit", "vis",
+                                                            "low", "mid", "high", "ext" };
     float  lastValues[numTracked] {};
     int    activeParam  = -1;     // -1 = nada tocado todavía
     double lastChangeMs = 0.0;

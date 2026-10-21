@@ -60,6 +60,10 @@ No Terminal needed: plugins installed by the .pkg are not blocked by macOS.
 | **compressio** key | Ratio about 3:1 with a soft 8 dB knee. Musical, for levelling. | | on |
 | **limes** key | Ratio about 10:1 with a 3 dB knee. For catching peaks or squashing. | | off |
 | **vis** key (top panel) | Switches the red knob between **reductio** (clean) and **vis** (drive). The knob's label changes with it. | | off |
+| **alius** key (*fons*, "source") | Off: Pressura listens to its own track. On: it listens to the track routed into its **sidechain** input (see below). | | off |
+| **gravis** (low, 40–200 Hz) | How much the lows of the source trigger compression. | OFF, −24 to +12 dB | 0 dB |
+| **medius** (mid, 200 Hz–1 kHz) | How much the mids trigger compression. | OFF, −24 to +12 dB | 0 dB |
+| **acutus** (high, 1–20 kHz) | How much the highs trigger compression. | OFF, −24 to +12 dB | 0 dB |
 
 **Double-click** any knob or the fader to return it to its default.
 
@@ -77,12 +81,35 @@ release. Half the gain reduction lets go quickly; the rest takes seconds to reco
 compressing, the slower the tail. Above 50 that slow "memory" fades out and the detector switches from
 average to peak level, so the compressor follows each hit and pumps.
 
+### Sidechain and the trigger EQ
+
+The bottom row decides **what makes Pressura compress**. The three green knobs are an EQ on the signal the
+compressor *listens to*, not on the sound you hear: the whole track is always compressed.
+
+- All three at 0 dB (straight up): no change, the compressor hears the full signal.
+- Turn a knob all the way down (**OFF**) to make that band ignored completely.
+- Example: Pressura on a bass, triggered by the drum bus. Press **alius**, set **gravis** to +6 dB and
+  **medius** and **acutus** to OFF: only the kick ducks the bass; snares and hats don't.
+- Without **alius**, the same knobs shape your own track: pull **gravis** down so a heavy low end doesn't
+  make the whole mix pump, or push **acutus** up to tame harsh highs.
+
+**Routing the trigger track** (you choose it in your DAW, not in the plugin), then press **alius**:
+- **Ableton Live:** open the Sidechain section on the Pressura device (the small triangle in its title bar) and choose the track under *Audio From*.
+- **Logic Pro:** pick the track in the **Side Chain** menu at the top of the plugin window.
+- **FL Studio:** on the trigger track's mixer insert, right-click the arrow to Pressura's insert → *Sidechain to this track*; then in Pressura's wrapper (*Processing* tab) set the sidechain input.
+- **Reaper:** add a send from the trigger track to Pressura's track on channels 3/4.
+- **Cubase:** click the sidechain button at the top of the plugin window and add the trigger track as a side-chain source.
+
+If **alius** is on but nothing is routed, Pressura has nothing to listen to and won't compress.
+
 ### The display
 
 - At rest it shows **PRS**.
 - While you move a control it shows the value. **2 seconds** after you let go, it shows the control's name:
-  **RED** (reductio) or **DRV** (vis), **SPD** (impetus), **OUT** (exitus), **MIX** (mixtura).
-- The keys show **CMP** / **LMT** and **VIS** / **CLN** when pressed.
+  **RED** (reductio) or **DRV** (vis), **SPD** (impetus), **OUT** (exitus), **MIX** (mixtura),
+  **LO** / **MID** / **HI** (gravis / medius / acutus; a band turned all the way down shows **OFF**).
+- The keys show **CMP** / **LMT**, **VIS** / **CLN** and **EXT** / **INT** when pressed.
+- **EXT** above the meter lights up while the sidechain input is the trigger.
 - **GR** meter: how much the level is being reduced right now, 0 to 20 dB. The *compressio* / *limes* and
   **VIS** indicators below and above it show the current modes.
 
@@ -93,7 +120,10 @@ average to peak level, so the compressor follows each hit and pumps.
 ```mermaid
 flowchart LR
     IN([Input]) --> DRV["vis drive<br/>0 to +24 dB<br/>(only when vis is on)"]
-    DRV --> DET["Detector<br/>stereo-linked<br/>RMS → peak with impetus"]
+    SC([Sidechain input]) -. alius on .-> SRC
+    DRV -- alius off --> SRC["Trigger source"]
+    SRC --> EQ["Trigger EQ<br/>gravis · medius · acutus<br/>crossovers 200 Hz / 1 kHz"]
+    EQ --> DET["Detector<br/>stereo-linked<br/>RMS → peak with impetus"]
     DET --> GC["Gain computer<br/>threshold · ratio · knee<br/>compressio 3:1 / limes 10:1"]
     GC --> REL["Attack / two-stage release<br/>set by impetus"]
     REL --> VCA["Gain + make-up"]
@@ -108,6 +138,9 @@ flowchart LR
   change rather than the volume. In *vis* mode the make-up is −drive ÷ ratio: whatever is far above the
   threshold comes out about as loud as it went in, and everything quieter gets louder.
 - **Dry signal** in the *mixtura* blend is always your original input, never driven.
+- **Trigger EQ:** 4th-order Linkwitz-Riley crossovers, so with all three bands at 0 dB they add back up flat;
+  at exactly 0 dB the EQ is bypassed and Pressura sounds the same as without it.
+- **Sidechain input** goes through the same drive (in *vis* mode) and EQ as your own signal would.
 - No latency, no oversampling, no lookahead.
 
 ---
@@ -121,6 +154,8 @@ flowchart LR
 | Drum bus that pumps | **vis** | vis 50–70 | 80–100 | compressio | 60–80 % |
 | Parallel smash | clean | reductio 80–100 | 70–90 | limes | 20–40 % |
 | Loud and dense | **vis** | vis 60–90 | 50–70 | limes | 100 %, lower exitus |
+| Bass ducked by the kick | clean, **alius** from drums | reductio 50–70 | 75–90 | compressio | 100 %; gravis +6, medius/acutus OFF |
+| Mix bus that doesn't pump on bass | clean | reductio 20–30 | 40–50 | compressio | 100 %; gravis −12 |
 
 With *vis* high and *impetus* low, transients get through before the compressor reacts and can hit 0 dBFS.
 Pull **exitus** down or put a limiter after Pressura.
@@ -156,9 +191,12 @@ The script explains how to sign and notarize it if you have an Apple Developer a
 - `Source/OptoCompressor.h` — the DSP, no JUCE dependency, can be tested on its own
 - `Source/PluginProcessor.*` — parameters and audio processing
 - `Source/PluginEditor.*` — the hand-drawn UI (colours in `Palette`)
+- `Source/SidechainEQ.h` — the trigger EQ, no JUCE dependency
+- `Tests/SidechainTest.cpp` — runs the plugin offline with a sidechain input and checks routing and EQ:
+  `cmake --build build --target OPTO2SidechainTest`, then `build/OPTO2SidechainTest_artefacts/Release/OPTO2SidechainTest`
 - `Tests/Snapshot.cpp` — renders the UI to a PNG without a DAW:
   `cmake --build build --target OPTO2Snapshot`, then
-  `build/OPTO2Snapshot_artefacts/Release/OPTO2Snapshot ui.png [vis] [limit]`
+  `build/OPTO2Snapshot_artefacts/Release/OPTO2Snapshot ui.png [vis] [limit] [ext]`
 
 ---
 

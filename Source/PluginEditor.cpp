@@ -134,7 +134,7 @@ Opto2Editor::Opto2Editor (Opto2Processor& p)
 {
     setLookAndFeel (&lnf);
 
-    for (auto* k : { &peakKnob, &speedKnob, &outputKnob })
+    for (auto* k : { &peakKnob, &speedKnob, &outputKnob, &lowKnob, &midKnob, &highKnob })
     {
         k->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
         k->setTextBoxStyle (Slider::NoTextBox, false, 0, 0);
@@ -149,6 +149,11 @@ Opto2Editor::Opto2Editor (Opto2Processor& p)
     speedKnob.setColour (Slider::rotarySliderFillColourId, Palette::keyCream);
     outputKnob.setColour (Slider::thumbColourId, Palette::knobCream);  // "magnitudo"
     outputKnob.setColour (Slider::rotarySliderFillColourId, Palette::ink);
+    for (auto* k : { &lowKnob, &midKnob, &highKnob })                    // como las teclas verdes
+    {
+        k->setColour (Slider::thumbColourId, Palette::keyGreen);
+        k->setColour (Slider::rotarySliderFillColourId, Palette::keyCream);
+    }
 
     mixFader.setSliderStyle (Slider::LinearVertical);
     mixFader.setTextBoxStyle (Slider::NoTextBox, false, 0, 0);
@@ -157,11 +162,16 @@ Opto2Editor::Opto2Editor (Opto2Processor& p)
     peakAtt   = std::make_unique<SliderAttachment> (proc.apvts, "peak",   peakKnob);
     speedAtt  = std::make_unique<SliderAttachment> (proc.apvts, "speed",  speedKnob);
     outputAtt = std::make_unique<SliderAttachment> (proc.apvts, "output", outputKnob);
+    lowAtt    = std::make_unique<SliderAttachment> (proc.apvts, "low",    lowKnob);
+    midAtt    = std::make_unique<SliderAttachment> (proc.apvts, "mid",    midKnob);
+    highAtt   = std::make_unique<SliderAttachment> (proc.apvts, "high",   highKnob);
     mixAtt    = std::make_unique<SliderAttachment> (proc.apvts, "mix",    mixFader);
 
     peakKnob.setDoubleClickReturnValue   (true, 40.0);
     speedKnob.setDoubleClickReturnValue (true, 50.0);
     outputKnob.setDoubleClickReturnValue (true, 0.0);
+    for (auto* k : { &lowKnob, &midKnob, &highKnob })
+        k->setDoubleClickReturnValue (true, 0.0);
     mixFader.setDoubleClickReturnValue   (true, 100.0);
 
     compKey.onClick  = [this] { setLimit (false); };
@@ -169,13 +179,16 @@ Opto2Editor::Opto2Editor (Opto2Processor& p)
     addAndMakeVisible (compKey);
     addAndMakeVisible (limitKey);
 
-    visKey.onClick = [this] { toggleVis(); };
+    visKey.onClick = [this] { toggle ("vis", visOn()); };
     addAndMakeVisible (visKey);
+
+    extKey.onClick = [this] { toggle ("ext", extOn()); };
+    addAndMakeVisible (extKey);
 
     for (int i = 0; i < numTracked; ++i)
         lastValues[i] = proc.apvts.getRawParameterValue (trackedIds[i])->load();
 
-    setSize (388, 508);
+    setSize (388, 626);
     startTimerHz (30);
 }
 
@@ -194,12 +207,12 @@ void Opto2Editor::setLimit (bool shouldLimit)
     }
 }
 
-void Opto2Editor::toggleVis()
+void Opto2Editor::toggle (const char* paramId, bool isOn)
 {
-    if (auto* param = proc.apvts.getParameter ("vis"))
+    if (auto* param = proc.apvts.getParameter (paramId))
     {
         param->beginChangeGesture();
-        param->setValueNotifyingHost (visOn() ? 0.0f : 1.0f);
+        param->setValueNotifyingHost (isOn ? 0.0f : 1.0f);
         param->endChangeGesture();
     }
 }
@@ -227,6 +240,7 @@ void Opto2Editor::timerCallback()
     compKey.setToggleState  (! limit, dontSendNotification);
     limitKey.setToggleState (limit,   dontSendNotification);
     visKey.setToggleState   (visOn(), dontSendNotification);
+    extKey.setToggleState   (extOn(), dontSendNotification);
 
     if (visOn() != wasVis) repaint();   // cambia la serigrafía de la perilla roja
     else                   repaint (displayArea.toNearestInt());
@@ -247,6 +261,12 @@ void Opto2Editor::resized()
     limitKey.setBounds (244, 382, 136, 62);
 
     visKey.setBounds (204, 18, 58, 44);
+
+    // Fila del sidechain: fuente + EQ del detector
+    extKey.setBounds (6, 514, 62, 46);
+    lowKnob.setBounds  (98,  500, 76, 76);
+    midKnob.setBounds  (200, 500, 76, 76);
+    highKnob.setBounds (297, 500, 76, 76);
 }
 
 void Opto2Editor::drawTopPanel (Graphics& g)
@@ -298,6 +318,15 @@ void Opto2Editor::paint (Graphics& g)
     labelOver (speedKnob, "impetus");
     labelOver (outputKnob, "exitus");
 
+    // Fila del sidechain
+    g.setColour (Palette::ink.withAlpha (0.25f));
+    g.drawLine (0.0f, 472.0f, b.getRight(), 472.0f, 1.0f);
+    g.setColour (Palette::ink);
+    labelOver (lowKnob,  "gravis");
+    labelOver (midKnob,  "medius");
+    labelOver (highKnob, "acutus");
+    g.drawText ("fons", 0, 478, 74, 20, Justification::centred);
+
     // Fader
     g.drawText ("mixtura", 0, 232, 72, 20, Justification::centred);
     g.setFont (OptoLookAndFeel::gothic (15.0f));
@@ -322,11 +351,11 @@ void Opto2Editor::paint (Graphics& g)
 
     // Pie
     g.setColour (Palette::ink.withAlpha (0.25f));
-    g.drawLine (0.0f, 472.0f, b.getRight(), 472.0f, 1.0f);
+    g.drawLine (0.0f, 590.0f, b.getRight(), 590.0f, 1.0f);
     g.setColour (Palette::ink);
     g.setFont (OptoLookAndFeel::gothic (15.0f));
-    g.drawText ("instrumentalis electronicum", 10, 480, 240, 20, Justification::centredLeft);
-    g.drawText ("@gueibrielon", 230, 480, 148, 20, Justification::centredRight);
+    g.drawText ("instrumentalis electronicum", 10, 598, 240, 20, Justification::centredLeft);
+    g.drawText ("@gueibrielon", 230, 598, 148, 20, Justification::centredRight);
 }
 
 //==============================================================================
@@ -346,7 +375,7 @@ namespace
             case 'I': return 6;   case 'K': return 117; case 'L': return 56;  case 'M': return 55;
             case 'O': return 63;  case 'P': return 115; case 'R': return 80;  case 'T': return 120;
             case 'U': return 62;  case 'X': return 118; case 'S': return 109; case 'V': return 28;
-            case 'N': return 84;
+            case 'N': return 84;  case 'H': return 118; case 'F': return 113;
             default:  return 0;
         }
     }
@@ -411,24 +440,31 @@ namespace
 String Opto2Editor::valueText (int param) const
 {
     const float v = lastValues[param];
+    auto db = [v]
+    {
+        if (std::abs (v) < 0.05f) return String ("0.0");
+        return std::abs (v) < 9.95f ? String (v, 1) : String (roundToInt (v));
+    };
     switch (param)
     {
         case 0:  return String (roundToInt (v));                                   // reductio 0–100
         case 1:  return String (roundToInt (v));                                   // impetus (speed) 0–100
-        case 2:  if (std::abs (v) < 0.05f) return "0.0";                           // exitus dB
-                 return std::abs (v) < 9.95f ? String (v, 1) : String (roundToInt (v));
+        case 2:  return db();                                                      // exitus dB
         case 3:  return String (roundToInt (v));                                   // mixtura %
+        case 6: case 7: case 8:                                                    // EQ del sidechain dB
+                 return v <= SidechainEQ::minDb + 0.05f ? String ("OFF") : db();
         default: return nameText (param);
     }
 }
 
 String Opto2Editor::nameText (int param) const
 {
-    static const char* names[] = { "RED", "SPD", "OUT", "MIX" };
+    static const char* names[] = { "RED", "SPD", "OUT", "MIX", "", "", "LO", "MID", "HI" };
     if (param < 0)  return "PRS";
     if (param == 0 && visOn()) return "DRV";
     if (param == 4) return lastValues[4] > 0.5f ? "LMT" : "CMP";
     if (param == 5) return visOn() ? "VIS" : "CLN";
+    if (param == 9) return extOn() ? "EXT" : "INT";
     return names[param];
 }
 
@@ -438,7 +474,7 @@ void Opto2Editor::drawDisplay (Graphics& g, Rectangle<float> r)
     g.fillRect (r);
 
     // Mientras se mueve: dígitos. 2 s después de soltar: letras del parámetro.
-    const bool moving = activeParam >= 0 && activeParam < 4
+    const bool moving = ((activeParam >= 0 && activeParam < 4) || (activeParam >= 6 && activeParam <= 8))
                         && Time::getMillisecondCounterHiRes() - lastChangeMs < 2000.0;
     const String txt = moving ? valueText (activeParam) : nameText (activeParam);
 
@@ -470,6 +506,8 @@ void Opto2Editor::drawDisplay (Graphics& g, Rectangle<float> r)
     g.drawText ("GR", Rectangle<float> (meter.getX(), r.getY() + 12.0f, 40.0f, 14.0f).toNearestInt(), Justification::centredLeft);
     g.setColour (visOn() ? Palette::led : Palette::led.withAlpha (0.18f));
     g.drawText ("VIS", Rectangle<float> (meter.getRight() - 40.0f, r.getY() + 12.0f, 40.0f, 14.0f).toNearestInt(), Justification::centredRight);
+    g.setColour (extOn() ? Palette::led : Palette::led.withAlpha (0.18f));
+    g.drawText ("EXT", Rectangle<float> (meter.getRight() - 80.0f, r.getY() + 12.0f, 40.0f, 14.0f).toNearestInt(), Justification::centredRight);
 
     const int segs = 20;
     const float segW = meter.getWidth() / (float) segs;

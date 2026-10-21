@@ -60,6 +60,11 @@ jobs:
       - name: Build
         run: cmake --build build --target OPTO2_AU OPTO2_VST3 OPTO2_Standalone -j4
 
+      - name: Sidechain test
+        run: |
+          cmake --build build --target OPTO2SidechainTest -j4
+          build/OPTO2SidechainTest_artefacts/Release/OPTO2SidechainTest
+
       - name: Validate AU with auval
         run: |
           killall -9 AudioComponentRegistrar 2>/dev/null || true
