@@ -11,10 +11,10 @@ jobs:
   windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Configure
-        run: cmake -B build -G "Visual Studio 17 2022" -A x64 -DPRESSURA_COPY_PLUGINS=OFF
+        run: cmake -B build -A x64 -DPRESSURA_COPY_PLUGINS=OFF
 
       - name: Build
         run: cmake --build build --config Release --target OPTO2_VST3 OPTO2_Standalone --parallel
@@ -44,7 +44,7 @@ jobs:
   macos:
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Configure
         run: cmake -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
@@ -72,7 +72,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/download-artifact@v4
         with:

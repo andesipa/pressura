@@ -142,8 +142,8 @@ With Xcode installed you can use `cmake -B build -G Xcode && cmake --build build
 The build is universal (arm64 + x86_64) and copies the AU and VST3 straight into `~/Library/Audio/Plug-Ins`.
 Validate the AU with `auval -v aufx Opt2 Guei`.
 
-**Windows:** Visual Studio 2022 ("Desktop development with C++") and CMake, then
-`cmake -B build -G "Visual Studio 17 2022" -A x64` and `cmake --build build --config Release`.
+**Windows:** Visual Studio 2022 or newer ("Desktop development with C++") and CMake, then
+`cmake -B build -A x64` and `cmake --build build --config Release`.
 The Windows installer is built with [Inno Setup](https://jrsoftware.org/isinfo.php): `iscc /DAppVersion=<version> tools\installer\pressura.iss`.
 
 **Releases:** pushing a tag like `v0.1.0` makes GitHub Actions build both installers and publish them
