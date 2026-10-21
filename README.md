@@ -15,16 +15,21 @@ press **vis** and the red knob stops lowering a threshold and starts *driving* t
 
 ## Installing
 
-1. Copy the plugins into these folders (create them if they don't exist):
-   - `Pressura.component` → `~/Library/Audio/Plug-Ins/Components`  (Audio Unit: Logic, GarageBand, Ableton…)
-   - `Pressura.vst3` → `~/Library/Audio/Plug-Ins/VST3`  (Ableton, Reaper, Bitwig, Cubase…)
-   - `Pressura.app` (Standalone) can go anywhere, e.g. `/Applications`.
-2. macOS blocks plugins downloaded from the internet that aren't notarized. If your DAW doesn't show
-   Pressura, or macOS says it "can't be opened", run this in Terminal:
-   ```bash
-   xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/Components/Pressura.component ~/Library/Audio/Plug-Ins/VST3/Pressura.vst3
-   ```
-3. Rescan plugins in your DAW (Ableton: *Settings → Plug-Ins → Rescan*). It appears as **Pressura** by **gueibrielon**.
+1. Download **`Pressura-<version>.pkg`** and double-click it.
+2. macOS will say it can't verify the developer, because Pressura isn't signed with a paid Apple account.
+   This only happens once:
+   - **macOS 15 Sequoia or newer:** click **Done**, open **System Settings → Privacy & Security**, scroll down
+     to *"Pressura-….pkg was blocked"* and click **Open Anyway**.
+   - **macOS 14 or older:** right-click (or Control-click) the .pkg, choose **Open**, then **Open** again.
+3. Follow the installer. It puts the plugins here (choose **Customize** to leave any out):
+   - Audio Unit → `/Library/Audio/Plug-Ins/Components` (Logic, GarageBand, Ableton…)
+   - VST3 → `/Library/Audio/Plug-Ins/VST3` (Ableton, Reaper, Bitwig, Cubase…)
+   - Standalone app → `/Applications`
+4. Rescan plugins in your DAW (Ableton: *Settings → Plug-Ins → Rescan*). It appears as **Pressura** by **gueibrielon**.
+
+No Terminal needed: plugins installed by the .pkg are not blocked by macOS.
+
+**Uninstall:** delete `Pressura.component`, `Pressura.vst3` and `Pressura.app` from the folders above.
 
 ---
 
@@ -121,6 +126,9 @@ cmake --build build -j8
 With Xcode installed you can use `cmake -B build -G Xcode && cmake --build build --config Release` instead.
 The build is universal (arm64 + x86_64) and copies the AU and VST3 straight into `~/Library/Audio/Plug-Ins`.
 Validate the AU with `auval -v aufx Opt2 Guei`.
+
+To build the installer: `./tools/make_installer.sh` → `build/installer/Pressura-<version>.pkg`.
+The script explains how to sign and notarize it if you have an Apple Developer account.
 
 ### Project files
 - `Source/OptoCompressor.h` — the DSP, no JUCE dependency, can be tested on its own
