@@ -86,5 +86,12 @@ if [ -n "${NOTARY_PROFILE:-}" ]; then
     xcrun stapler staple "$PKG"
 fi
 
-rm -rf "$WORK"
-echo "Built $PKG"
+# Download package: installer + guide, in a folder so it unzips tidily
+ZIPDIR="$OUT/$NAME-$VERSION-macOS"
+mkdir -p "$ZIPDIR"
+cp "$PKG" "$ZIPDIR/"
+cp docs/Pressura-Guide.pdf "$ZIPDIR/Pressura Guide.pdf"
+(cd "$OUT" && ditto -c -k --norsrc --noextattr --noqtn --keepParent "$NAME-$VERSION-macOS" "$NAME-$VERSION-macOS.zip")
+
+rm -rf "$WORK" "$ZIPDIR"
+echo "Built $PKG and $OUT/$NAME-$VERSION-macOS.zip"

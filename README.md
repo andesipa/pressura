@@ -15,22 +15,23 @@ press **vis** and the red knob stops lowering a threshold and starts *driving* t
 
 ## Installing
 
-Download the latest installer from the **Releases** page.
+Download the latest zip for your computer from the **Releases** page. It contains the installer and
+**[Pressura Guide.pdf](docs/Pressura-Guide.pdf)**, an illustrated guide to every control (English and Spanish).
 
 ### Windows
 
-1. Download **`Pressura-<version>-Windows-Setup.exe`** and double-click it.
+1. Unzip **`Pressura-<version>-Windows.zip`** and double-click **`Pressura-<version>-Windows-Setup.exe`**.
 2. Windows will say *"Windows protected your PC"*, because Pressura isn't signed with a paid certificate.
    Click **More info** → **Run anyway**. This only happens once.
 3. Follow the installer. It puts the VST3 in `C:\Program Files\Common Files\VST3` and the Standalone app in
-   `C:\Program Files\Pressura`, with a Start menu shortcut.
+   `C:\Program Files\Pressura`, with Start menu shortcuts for the app and the guide.
 4. Rescan plugins in your DAW. It appears as **Pressura** by **gueibrielon**.
 
 **Uninstall:** *Settings → Apps → Pressura → Uninstall*.
 
 ### macOS
 
-1. Download **`Pressura-<version>.pkg`** and double-click it.
+1. Unzip **`Pressura-<version>-macOS.zip`** (Safari does it for you) and double-click **`Pressura-<version>.pkg`**.
 2. macOS will say it can't verify the developer, because Pressura isn't signed with a paid Apple account.
    This only happens once:
    - **macOS 15 Sequoia or newer:** click **Done**, open **System Settings → Privacy & Security**, scroll down
@@ -194,6 +195,7 @@ The script explains how to sign and notarize it if you have an Apple Developer a
 - `Source/SidechainEQ.h` — the trigger EQ, no JUCE dependency
 - `Tests/SidechainTest.cpp` — runs the plugin offline with a sidechain input and checks routing and EQ:
   `cmake --build build --target OPTO2SidechainTest`, then `build/OPTO2SidechainTest_artefacts/Release/OPTO2SidechainTest`
+- `tools/guide/make_guide.py` — builds `docs/Pressura-Guide.pdf` (needs Google Chrome)
 - `Tests/Snapshot.cpp` — renders the UI to a PNG without a DAW:
   `cmake --build build --target OPTO2Snapshot`, then
   `build/OPTO2Snapshot_artefacts/Release/OPTO2Snapshot ui.png [vis] [limit] [ext]`

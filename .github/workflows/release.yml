@@ -44,10 +44,17 @@ jobs:
           & $iscc "/DAppVersion=$version" tools\installer\pressura.iss
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
+          # Download package: installer + guide
+          $dir = "build\installer\Pressura-$version-Windows"
+          New-Item -ItemType Directory $dir | Out-Null
+          Copy-Item "build\installer\Pressura-$version-Windows-Setup.exe" $dir
+          Copy-Item docs\Pressura-Guide.pdf "$dir\Pressura Guide.pdf"
+          Compress-Archive -Path $dir -DestinationPath "build\installer\Pressura-$version-Windows.zip"
+
       - uses: actions/upload-artifact@v4
         with:
           name: windows-installer
-          path: build/installer/*.exe
+          path: build/installer/*.zip
 
   macos:
     runs-on: macos-14
@@ -76,7 +83,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: macos-installer
-          path: build/installer/*.pkg
+          path: build/installer/*.zip
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')

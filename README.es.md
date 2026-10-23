@@ -15,22 +15,23 @@ apretá **vis** y la perilla roja deja de bajar un umbral y empieza a *empujar* 
 
 ## Instalación
 
-Bajá el último instalador de la página de **Releases**.
+Bajá el último zip para tu computadora de la página de **Releases**. Trae el instalador y
+**[Pressura Guide.pdf](docs/Pressura-Guide.pdf)**, una guía ilustrada de todos los controles.
 
 ### Windows
 
-1. Bajá **`Pressura-<versión>-Windows-Setup.exe`** y hacé doble click.
+1. Descomprimí **`Pressura-<versión>-Windows.zip`** y hacé doble click en **`Pressura-<versión>-Windows-Setup.exe`**.
 2. Windows va a decir *"Windows protegió su PC"*, porque Pressura no está firmado con un certificado pago.
    Tocá **Más información** → **Ejecutar de todas formas**. Pasa una sola vez.
 3. Seguí el instalador. Pone el VST3 en `C:\Program Files\Common Files\VST3` y la app Standalone en
-   `C:\Program Files\Pressura`, con acceso directo en el menú Inicio.
+   `C:\Program Files\Pressura`, con accesos directos en el menú Inicio para la app y la guía.
 4. Volvé a escanear los plugins en tu DAW. Aparece como **Pressura** de **gueibrielon**.
 
 **Desinstalar:** *Configuración → Aplicaciones → Pressura → Desinstalar*.
 
 ### macOS
 
-1. Bajá **`Pressura-<versión>.pkg`** y hacé doble click.
+1. Descomprimí **`Pressura-<versión>-macOS.zip`** (Safari lo hace solo) y hacé doble click en **`Pressura-<versión>.pkg`**.
 2. macOS va a decir que no puede verificar al desarrollador, porque Pressura no está firmado con una cuenta
    paga de Apple. Pasa una sola vez:
    - **macOS 15 Sequoia o más nuevo:** tocá **OK**, abrí **Configuración del Sistema → Privacidad y seguridad**,
@@ -194,6 +195,7 @@ El script explica cómo firmarlo y notarizarlo si tenés una cuenta de Apple Dev
 - `Source/SidechainEQ.h` — el EQ del disparo, sin dependencia de JUCE
 - `Tests/SidechainTest.cpp` — corre el plugin offline con entrada de sidechain y verifica el ruteo y el EQ:
   `cmake --build build --target OPTO2SidechainTest`, después `build/OPTO2SidechainTest_artefacts/Release/OPTO2SidechainTest`
+- `tools/guide/make_guide.py` — arma `docs/Pressura-Guide.pdf` (necesita Google Chrome)
 - `Tests/Snapshot.cpp` — renderiza la UI a PNG sin abrir un DAW:
   `cmake --build build --target OPTO2Snapshot`, después
   `build/OPTO2Snapshot_artefacts/Release/OPTO2Snapshot ui.png [vis] [limit] [ext]`

@@ -2,10 +2,11 @@
 
 | | File | Installs |
 |---|---|---|
-| **Windows** 10/11 (64-bit) | `Pressura-…-Windows-Setup.exe` | VST3 + Standalone app |
-| **macOS** 11+ (Intel & Apple Silicon) | `Pressura-….pkg` | Audio Unit + VST3 + Standalone app |
+| **Windows** 10/11 (64-bit) | `Pressura-…-Windows.zip` | VST3 + Standalone app |
+| **macOS** 11+ (Intel & Apple Silicon) | `Pressura-…-macOS.zip` | Audio Unit + VST3 + Standalone app |
 
-Download the file for your computer (under **Assets** below) and double-click it.
+Download the zip for your computer (under **Assets** below) and unzip it. Inside you'll find the installer and
+**Pressura Guide.pdf**, an illustrated guide to every control (English and Spanish). Double-click the installer.
 
 **First time you open it, your computer will warn you** because Pressura isn't signed with a paid developer certificate:
 - **Windows:** "Windows protected your PC" → click **More info** → **Run anyway**.

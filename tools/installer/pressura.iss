@@ -38,6 +38,8 @@ Name: "app"; Description: "Standalone app"; Types: full
 Source: "{#ArtDir}\VST3\Pressura.vst3\*"; DestDir: "{commoncf64}\VST3\Pressura.vst3"; Components: vst3; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#ArtDir}\Standalone\Pressura.exe"; DestDir: "{app}"; Components: app; Flags: ignoreversion
 Source: "..\..\Resources\OFL.txt"; DestDir: "{app}"; DestName: "license-font.txt"; Flags: ignoreversion
+Source: "..\..\docs\Pressura-Guide.pdf"; DestDir: "{app}"; DestName: "Pressura Guide.pdf"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\Pressura"; Filename: "{app}\Pressura.exe"; Components: app
+Name: "{autoprograms}\Pressura Guide"; Filename: "{app}\Pressura Guide.pdf"
