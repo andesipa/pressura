@@ -127,6 +127,75 @@ void OptoLookAndFeel::drawButtonText (Graphics& g, TextButton& b, bool, bool dow
 }
 
 //==============================================================================
+// Menú de presets
+//==============================================================================
+void OptoLookAndFeel::drawPopupMenuBackground (Graphics& g, int width, int height)
+{
+    g.fillAll (Palette::screen);
+    g.setColour (Palette::ink);
+    g.drawRect (0, 0, width, height, 2);
+}
+
+void OptoLookAndFeel::drawPopupMenuItem (Graphics& g, const Rectangle<int>& area, bool isSeparator, bool isActive,
+                                         bool isHighlighted, bool isTicked, bool, const String& text,
+                                         const String&, const Drawable*, const Colour*)
+{
+    if (isSeparator)
+    {
+        g.setColour (Palette::led.withAlpha (0.25f));
+        g.fillRect (area.reduced (8, 0).withHeight (1).withY (area.getCentreY()));
+        return;
+    }
+    auto r = area.reduced (2, 1);
+    if (isHighlighted && isActive)
+    {
+        g.setColour (Palette::keyRed);
+        g.fillRect (r);
+    }
+    g.setColour (isTicked ? Palette::led : Palette::keyCream);
+    if (isTicked && ! isHighlighted)
+        g.fillEllipse ((float) r.getX() + 6.0f, (float) r.getCentreY() - 3.0f, 6.0f, 6.0f);
+    g.setColour (isHighlighted ? Palette::keyCream : (isTicked ? Palette::led : Palette::keyCream));
+    g.setFont (getPopupMenuFont());
+    g.drawText (text, r.withTrimmedLeft (20), Justification::centredLeft);
+}
+
+//==============================================================================
+// Barra de presets
+//==============================================================================
+void PresetBar::paint (Graphics& g)
+{
+    auto r = getLocalBounds().toFloat().reduced (0.5f);
+    g.setColour (Palette::keyGreen);
+    g.fillRoundedRectangle (r, 4.0f);
+    g.setColour (Colours::black.withAlpha (0.45f));
+    g.drawRoundedRectangle (r, 4.0f, 1.0f);
+
+    auto tri = [&] (float cx, bool left)
+    {
+        Path p;
+        const float cy = r.getCentreY(), s = 4.5f;
+        if (left) p.addTriangle (cx + s * 0.6f, cy - s, cx + s * 0.6f, cy + s, cx - s * 0.6f, cy);
+        else      p.addTriangle (cx - s * 0.6f, cy - s, cx - s * 0.6f, cy + s, cx + s * 0.6f, cy);
+        g.fillPath (p);
+    };
+    g.setColour (Palette::red);
+    tri ((float) arrowW * 0.5f + 1.0f, true);
+    tri (r.getRight() - (float) arrowW * 0.5f - 1.0f, false);
+
+    g.setColour (Palette::keyCream);
+    g.setFont (OptoLookAndFeel::gothic (14.0f));
+    g.drawFittedText (name, getLocalBounds().reduced (arrowW, 0), Justification::centred, 1, 0.8f);
+}
+
+void PresetBar::mouseDown (const MouseEvent& e)
+{
+    if (e.x < arrowW)                    { if (onStep) onStep (-1); }
+    else if (e.x > getWidth() - arrowW)  { if (onStep) onStep (+1); }
+    else if (onOpenMenu)                 onOpenMenu();
+}
+
+//==============================================================================
 // Editor
 //==============================================================================
 Opto2Editor::Opto2Editor (Opto2Processor& p)
@@ -134,7 +203,7 @@ Opto2Editor::Opto2Editor (Opto2Processor& p)
 {
     setLookAndFeel (&lnf);
 
-    for (auto* k : { &peakKnob, &speedKnob, &outputKnob, &lowKnob, &midKnob, &highKnob })
+    for (auto* k : { &peakKnob, &speedKnob, &outputKnob })
     {
         k->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
         k->setTextBoxStyle (Slider::NoTextBox, false, 0, 0);
@@ -149,11 +218,6 @@ Opto2Editor::Opto2Editor (Opto2Processor& p)
     speedKnob.setColour (Slider::rotarySliderFillColourId, Palette::keyCream);
     outputKnob.setColour (Slider::thumbColourId, Palette::knobCream);  // "magnitudo"
     outputKnob.setColour (Slider::rotarySliderFillColourId, Palette::ink);
-    for (auto* k : { &lowKnob, &midKnob, &highKnob })                    // como las teclas verdes
-    {
-        k->setColour (Slider::thumbColourId, Palette::keyGreen);
-        k->setColour (Slider::rotarySliderFillColourId, Palette::keyCream);
-    }
 
     mixFader.setSliderStyle (Slider::LinearVertical);
     mixFader.setTextBoxStyle (Slider::NoTextBox, false, 0, 0);
@@ -162,16 +226,11 @@ Opto2Editor::Opto2Editor (Opto2Processor& p)
     peakAtt   = std::make_unique<SliderAttachment> (proc.apvts, "peak",   peakKnob);
     speedAtt  = std::make_unique<SliderAttachment> (proc.apvts, "speed",  speedKnob);
     outputAtt = std::make_unique<SliderAttachment> (proc.apvts, "output", outputKnob);
-    lowAtt    = std::make_unique<SliderAttachment> (proc.apvts, "low",    lowKnob);
-    midAtt    = std::make_unique<SliderAttachment> (proc.apvts, "mid",    midKnob);
-    highAtt   = std::make_unique<SliderAttachment> (proc.apvts, "high",   highKnob);
     mixAtt    = std::make_unique<SliderAttachment> (proc.apvts, "mix",    mixFader);
 
     peakKnob.setDoubleClickReturnValue   (true, 40.0);
     speedKnob.setDoubleClickReturnValue (true, 50.0);
     outputKnob.setDoubleClickReturnValue (true, 0.0);
-    for (auto* k : { &lowKnob, &midKnob, &highKnob })
-        k->setDoubleClickReturnValue (true, 0.0);
     mixFader.setDoubleClickReturnValue   (true, 100.0);
 
     compKey.onClick  = [this] { setLimit (false); };
@@ -185,10 +244,21 @@ Opto2Editor::Opto2Editor (Opto2Processor& p)
     extKey.onClick = [this] { toggle ("ext", extOn()); };
     addAndMakeVisible (extKey);
 
+    presetBar.onStep = [this] (int delta)
+    {
+        const int n = proc.getNumPrograms();
+        proc.loadPreset ((proc.getCurrentProgram() + delta + n) % n);
+    };
+    presetBar.onOpenMenu = [this] { showPresetMenu(); };
+    addAndMakeVisible (presetBar);
+    shownPreset = proc.getCurrentProgram();
+    seenPresetLoads = proc.presetLoads.load();
+    presetBar.setPresetName (proc.getProgramName (shownPreset));
+
     for (int i = 0; i < numTracked; ++i)
         lastValues[i] = proc.apvts.getRawParameterValue (trackedIds[i])->load();
 
-    setSize (388, 626);
+    setSize (388, 508);
     startTimerHz (30);
 }
 
@@ -217,8 +287,35 @@ void Opto2Editor::toggle (const char* paramId, bool isOn)
     }
 }
 
+void Opto2Editor::showPresetMenu()
+{
+    PopupMenu menu;
+    menu.setLookAndFeel (&lnf);
+    for (int i = 0; i < proc.getNumPrograms(); ++i)
+    {
+        menu.addItem (i + 1, proc.getProgramName (i), true, i == proc.getCurrentProgram());
+        if (i == 0) menu.addSeparator();
+    }
+    menu.showMenuAsync (PopupMenu::Options().withTargetComponent (&presetBar).withMinimumWidth (presetBar.getWidth() + 40),
+                        [this] (int result) { if (result > 0) proc.loadPreset (result - 1); });
+}
+
 void Opto2Editor::timerCallback()
 {
+    // Preset nuevo (desde la barra o desde el host): mostrar Pxx y no tratarlo como "perilla movida"
+    if (const int loads = proc.presetLoads.load(); loads != seenPresetLoads || proc.getCurrentProgram() != shownPreset)
+    {
+        seenPresetLoads = loads;
+        shownPreset    = proc.getCurrentProgram();
+        presetChangeMs = Time::getMillisecondCounterHiRes();
+        presetBar.setPresetName (proc.getProgramName (shownPreset));
+        for (int i = 0; i < numTracked; ++i)
+            lastValues[i] = proc.apvts.getRawParameterValue (trackedIds[i])->load();
+        activeParam = -1;
+        repaint();
+        return;
+    }
+
     const float gr = proc.meterGrDb.load();
     shownGr = gr > shownGr ? gr : shownGr * 0.88f + gr * 0.12f;
 
@@ -257,16 +354,12 @@ void Opto2Editor::resized()
 
     mixFader.setBounds (10, 258, 50, 190);
 
-    compKey.setBounds  (96,  382, 136, 62);
-    limitKey.setBounds (244, 382, 136, 62);
+    compKey.setBounds  (96,  382, 90, 62);
+    limitKey.setBounds (192, 382, 90, 62);
+    extKey.setBounds   (290, 382, 90, 62);   // sidechain externo
 
     visKey.setBounds (204, 18, 58, 44);
-
-    // Fila del sidechain: fuente + EQ del detector
-    extKey.setBounds (6, 514, 62, 46);
-    lowKnob.setBounds  (98,  500, 76, 76);
-    midKnob.setBounds  (200, 500, 76, 76);
-    highKnob.setBounds (297, 500, 76, 76);
+    presetBar.setBounds (150, 80, 118, 28);
 }
 
 void Opto2Editor::drawTopPanel (Graphics& g)
@@ -318,15 +411,6 @@ void Opto2Editor::paint (Graphics& g)
     labelOver (speedKnob, "impetus");
     labelOver (outputKnob, "exitus");
 
-    // Fila del sidechain
-    g.setColour (Palette::ink.withAlpha (0.25f));
-    g.drawLine (0.0f, 472.0f, b.getRight(), 472.0f, 1.0f);
-    g.setColour (Palette::ink);
-    labelOver (lowKnob,  "gravis");
-    labelOver (midKnob,  "medius");
-    labelOver (highKnob, "acutus");
-    g.drawText ("fons", 0, 478, 74, 20, Justification::centred);
-
     // Fader
     g.drawText ("mixtura", 0, 232, 72, 20, Justification::centred);
     g.setFont (OptoLookAndFeel::gothic (15.0f));
@@ -342,20 +426,21 @@ void Opto2Editor::paint (Graphics& g)
 
     // Puntitos bajo las teclas, como en el aparato
     g.setColour (Palette::red);
-    g.fillEllipse (100.0f, 452.0f, 5.0f, 5.0f);
-    g.fillEllipse (248.0f, 452.0f, 5.0f, 5.0f);
+    for (float x : { 100.0f, 196.0f, 294.0f })
+        g.fillEllipse (x, 452.0f, 5.0f, 5.0f);
     g.setColour (Palette::ink);
     g.setFont (OptoLookAndFeel::gothic (13.0f));
-    g.drawText ("ratio tres",  110, 446, 120, 16, Justification::centredLeft);
-    g.drawText ("ratio decem", 258, 446, 120, 16, Justification::centredLeft);
+    g.drawText ("ratio tres",  108, 446, 80, 16, Justification::centredLeft);
+    g.drawText ("ratio decem", 204, 446, 80, 16, Justification::centredLeft);
+    g.drawText ("fons alius",  302, 446, 80, 16, Justification::centredLeft);
 
     // Pie
     g.setColour (Palette::ink.withAlpha (0.25f));
-    g.drawLine (0.0f, 590.0f, b.getRight(), 590.0f, 1.0f);
+    g.drawLine (0.0f, 472.0f, b.getRight(), 472.0f, 1.0f);
     g.setColour (Palette::ink);
     g.setFont (OptoLookAndFeel::gothic (15.0f));
-    g.drawText ("instrumentalis electronicum", 10, 598, 240, 20, Justification::centredLeft);
-    g.drawText ("@gueibrielon", 230, 598, 148, 20, Justification::centredRight);
+    g.drawText ("instrumentalis electronicum", 10, 480, 240, 20, Justification::centredLeft);
+    g.drawText ("@gueibrielon", 230, 480, 148, 20, Justification::centredRight);
 }
 
 //==============================================================================
@@ -371,11 +456,10 @@ namespace
             case '0': return 63;  case '1': return 6;   case '2': return 91;  case '3': return 79;
             case '4': return 102; case '5': return 109; case '6': return 125; case '7': return 7;
             case '8': return 127; case '9': return 111; case '-': return 64;
-            case 'A': return 119; case 'C': return 57;  case 'D': return 94;  case 'E': return 121;
-            case 'I': return 6;   case 'K': return 117; case 'L': return 56;  case 'M': return 55;
-            case 'O': return 63;  case 'P': return 115; case 'R': return 80;  case 'T': return 120;
-            case 'U': return 62;  case 'X': return 118; case 'S': return 109; case 'V': return 28;
-            case 'N': return 84;  case 'H': return 118; case 'F': return 113;
+            case 'C': return 57;  case 'D': return 94;  case 'E': return 121; case 'F': return 113;
+            case 'I': return 6;   case 'L': return 56;  case 'M': return 55;  case 'N': return 84;
+            case 'O': return 63;  case 'P': return 115; case 'R': return 80;  case 'S': return 109;
+            case 'T': return 120; case 'U': return 62;  case 'V': return 28;  case 'X': return 118;
             default:  return 0;
         }
     }
@@ -440,31 +524,25 @@ namespace
 String Opto2Editor::valueText (int param) const
 {
     const float v = lastValues[param];
-    auto db = [v]
-    {
-        if (std::abs (v) < 0.05f) return String ("0.0");
-        return std::abs (v) < 9.95f ? String (v, 1) : String (roundToInt (v));
-    };
     switch (param)
     {
         case 0:  return String (roundToInt (v));                                   // reductio 0–100
         case 1:  return String (roundToInt (v));                                   // impetus (speed) 0–100
-        case 2:  return db();                                                      // exitus dB
+        case 2:  if (std::abs (v) < 0.05f) return "0.0";                           // exitus dB
+                 return std::abs (v) < 9.95f ? String (v, 1) : String (roundToInt (v));
         case 3:  return String (roundToInt (v));                                   // mixtura %
-        case 6: case 7: case 8:                                                    // EQ del sidechain dB
-                 return v <= SidechainEQ::minDb + 0.05f ? String ("OFF") : db();
         default: return nameText (param);
     }
 }
 
 String Opto2Editor::nameText (int param) const
 {
-    static const char* names[] = { "RED", "SPD", "OUT", "MIX", "", "", "LO", "MID", "HI" };
+    static const char* names[] = { "RED", "SPD", "OUT", "MIX" };
     if (param < 0)  return "PRS";
     if (param == 0 && visOn()) return "DRV";
     if (param == 4) return lastValues[4] > 0.5f ? "LMT" : "CMP";
     if (param == 5) return visOn() ? "VIS" : "CLN";
-    if (param == 9) return extOn() ? "EXT" : "INT";
+    if (param == 6) return extOn() ? "EXT" : "INT";
     return names[param];
 }
 
@@ -474,9 +552,11 @@ void Opto2Editor::drawDisplay (Graphics& g, Rectangle<float> r)
     g.fillRect (r);
 
     // Mientras se mueve: dígitos. 2 s después de soltar: letras del parámetro.
-    const bool moving = ((activeParam >= 0 && activeParam < 4) || (activeParam >= 6 && activeParam <= 8))
+    const bool moving = activeParam >= 0 && activeParam < 4
                         && Time::getMillisecondCounterHiRes() - lastChangeMs < 2000.0;
-    const String txt = moving ? valueText (activeParam) : nameText (activeParam);
+    String txt = moving ? valueText (activeParam) : nameText (activeParam);
+    if (Time::getMillisecondCounterHiRes() - presetChangeMs < 2000.0)
+        txt = shownPreset == 0 ? String ("DEF") : "P" + String (shownPreset).paddedLeft ('0', 2);
 
     struct Cell { juce_wchar c = ' '; bool dp = false; };
     Cell cells[3];

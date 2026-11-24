@@ -1,5 +1,5 @@
 // Renders the plugin window to a PNG so the layout can be checked without a DAW.
-// Usage: OPTO2Snapshot out.png [vis] [limit]
+// Usage: OPTO2Snapshot out.png [vis] [limit] [ext] [preset=N]
 #include "../Source/PluginProcessor.h"
 #include "../Source/PluginEditor.h"
 
@@ -9,8 +9,13 @@ int main (int argc, char** argv)
     Opto2Processor processor;
 
     for (int i = 2; i < argc; ++i)
-        if (auto* p = processor.apvts.getParameter (argv[i]))
+    {
+        const juce::String arg (argv[i]);
+        if (arg.startsWith ("preset="))
+            processor.loadPreset (arg.fromFirstOccurrenceOf ("=", false, false).getIntValue());
+        else if (auto* p = processor.apvts.getParameter (arg))
             p->setValueNotifyingHost (1.0f);
+    }
 
     std::unique_ptr<juce::AudioProcessorEditor> editor (processor.createEditor());
     auto image = editor->createComponentSnapshot (editor->getLocalBounds(), true, 2.0f);

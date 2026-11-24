@@ -21,25 +21,25 @@ CSS_TOKENS = """
   --red:#bf0e06; --key-red:#9e150a; --screen:#191413; --led:#e8321e; --speaker:#332015;
 """
 
-# Marker positions on the 388 x 626 panel (editor coordinates), number -> (x, y)
+# Marker positions on the 388 x 508 panel (editor coordinates), number -> (x, y)
 MARKERS = {1: (200, 14), 2: (18, 128), 3: (380, 156), 4: (60, 262), 5: (94, 262), 6: (196, 262),
-           7: (293, 262), 8: (238, 378), 9: (6, 506), 10: (96, 500)}
+           7: (293, 262), 8: (189, 378), 9: (376, 378), 10: (272, 94)}
 
 TEXT = {
 "en": dict(
     lang="en", subtitle="amplificator opticus · user guide",
     panel_title="The panel",
     legend=[
-        ("vis", "Drive mode. Off: the red knob is <b>reductio</b>. On: it becomes <b>vis</b> and pushes the signal into the compressor, denser and louder."),
-        ("Display", "Shows the value while you turn a control; 2 s later, its name: <span class=led>RED</span> <span class=led>DRV</span> <span class=led>SPD</span> <span class=led>OUT</span> <span class=led>MIX</span> <span class=led>LO</span> <span class=led>MID</span> <span class=led>HI</span>."),
+        ("vis", "Drive + saturation. Off: the red knob is <b>reductio</b>. On: it becomes <b>vis</b>, pushes the signal into the compressor and saturates it, dirtier the higher you turn it."),
+        ("Display", "Shows the value while you turn a control; 2 s later, its name: <span class=led>RED</span> <span class=led>DRV</span> <span class=led>SPD</span> <span class=led>OUT</span> <span class=led>MIX</span>."),
         ("GR meter", "How many dB are being taken off right now (0–20). <span class=led>EXT</span> and <span class=led>VIS</span> light up when those modes are on."),
         ("mixtura", "Dry / wet. Pull it down for parallel compression (<i>siccus</i> = dry)."),
-        ("reductio · vis", "How much it compresses (0–100). In vis mode: how hard you drive it."),
+        ("reductio · vis", "How much it compresses (0–100). In vis mode: how hard you drive and saturate it."),
         ("impetus", "Speed. 50 = classic optical. Lower is smoother; higher is faster and punchier, and pumps."),
         ("exitus", "Output level, −18 to +18 dB."),
         ("compressio · limes", "Ratio 3:1 (gentle levelling) or 10:1 (limiting, squashing)."),
         ("alius", "Listen to another track: the one routed into Pressura's sidechain input in your DAW."),
-        ("gravis · medius · acutus", "Trigger EQ: how much the lows (40–200 Hz), mids (200 Hz–1 kHz) and highs (1–20 kHz) make it compress. Straight up = 0 dB, all the way down = <span class=led>OFF</span>."),
+        ("Presets", "‹ › step through 9 factory presets; click the name for the list. The display shows <span class=led>P01</span>–<span class=led>P09</span>; your DAW lists them too."),
     ],
     tip="Double-click any control to reset it.",
     use_title="How to use it",
@@ -55,35 +55,28 @@ TEXT = {
                 ("100", "0.3 ms", "30 ms", "fast, pumps with the beat")],
     sc_title="Duck a track with the kick",
     sc=["Route the drums into Pressura's <b>sidechain</b> in your DAW. <i>Ableton:</i> Sidechain section → Audio From. <i>Logic:</i> Side Chain menu. <i>FL Studio:</i> Sidechain to this track. <i>Reaper:</i> send to channels 3/4. <i>Cubase:</i> side-chain button.",
-        "Press <b>alius</b> (<span class=led>EXT</span> lights up).",
-        "<b>gravis</b> +6 dB, <b>medius</b> and <b>acutus</b> OFF: only the kick triggers it.",
-        "<b>reductio</b> 50–70, <b>impetus</b> 75–90."],
-    recipes_title="Starting points", recipes_head=("Use", "Red knob", "impetus", "Ratio", "Also"),
-    recipes=[("Vocal or bass levelling", "reductio 40–60", "40–50", "compressio", "—"),
-             ("Mix bus glue", "reductio 15–30", "30–50", "compressio", "—"),
-             ("Drum bus that pumps", "vis 50–70", "80–100", "compressio", "vis on · mixtura 60–80 %"),
-             ("Parallel smash", "reductio 80–100", "70–90", "limes", "mixtura 20–40 %"),
-             ("Loud and dense", "vis 60–90", "50–70", "limes", "vis on · lower exitus"),
-             ("Bass ducked by the kick", "reductio 50–70", "75–90", "compressio", "alius · gravis +6 · medius, acutus OFF"),
-             ("Bus that doesn't pump on bass", "reductio 20–30", "40–50", "compressio", "gravis −12")],
+        "Load the <b>Bass Sidechain</b> preset: it turns <b>alius</b> on (<span class=led>EXT</span>), so the drums duck the bass.",
+        "Turn <b>reductio</b> until the bass dips 6–10 dB on each kick."],
+    recipes_title="Presets", recipes_head=("Preset", "For"),
+    recipes=[('Vocal Leveler', 'Vocals, voice-over: smooth optical levelling, about 3 dB.'), ('Bass Leveler', 'DI or synth bass: evens out the notes.'), ('Drum Bus Glue', 'Drum bus, 1176-style: kick and lows stay put, quieter percussion comes up ~3 dB.'), ('Mix Bus Glue', 'Mix bus: about 1–2 dB, SSL-style 2:1 glue, same level.'), ('Parallel Smash', 'Drums or anything: crushed ~11 dB at 10:1, blended in at 30 %.'), ('Peak Limiter', 'Anything: 10:1 and fast, only catches the peaks.'), ('Drum Bus Pump', 'Drum bus: vis drive and saturation, pumps like an all-buttons 1176.'), ('Crunch', 'Drums, loops, synths: vis saturation, dirty and dense.'), ('Bass Sidechain', "Bass ducked by the kick (~8 dB per hit). Route the drums to Pressura's sidechain.")],
     flow_title="Signal flow",
-    flow=["Input", "vis drive", "trigger: own track or alius", "trigger EQ", "detector", "gain", "mixtura", "exitus"],
+    flow=["Input", "vis drive", "trigger: own track or alius", "detector", "gain", "vis saturation", "mixtura", "exitus"],
     warn="With vis high and impetus low, transients can hit 0 dBFS: lower exitus or add a limiter after Pressura.",
     footer="Made by @gueibrielon · github.com/andesipa/pressura"),
 "es": dict(
     lang="es", subtitle="amplificator opticus · guía de uso",
     panel_title="El panel",
     legend=[
-        ("vis", "Modo drive. Apagada: la perilla roja es <b>reductio</b>. Prendida: pasa a <b>vis</b> y empuja la señal contra el compresor, más denso y más fuerte."),
-        ("Visor", "Muestra el valor mientras girás un control; 2 s después, el nombre: <span class=led>RED</span> <span class=led>DRV</span> <span class=led>SPD</span> <span class=led>OUT</span> <span class=led>MIX</span> <span class=led>LO</span> <span class=led>MID</span> <span class=led>HI</span>."),
+        ("vis", "Drive + saturación. Apagada: la perilla roja es <b>reductio</b>. Prendida: pasa a <b>vis</b>, empuja la señal contra el compresor y la satura, más sucio cuanto más la subís."),
+        ("Visor", "Muestra el valor mientras girás un control; 2 s después, el nombre: <span class=led>RED</span> <span class=led>DRV</span> <span class=led>SPD</span> <span class=led>OUT</span> <span class=led>MIX</span>."),
         ("Medidor GR", "Cuántos dB se están bajando en este momento (0–20). <span class=led>EXT</span> y <span class=led>VIS</span> se prenden con esos modos."),
         ("mixtura", "Seco / procesado. Bajalo para compresión en paralelo (<i>siccus</i> = seco)."),
-        ("reductio · vis", "Cuánto comprime (0–100). En modo vis: cuánto lo empujás."),
+        ("reductio · vis", "Cuánto comprime (0–100). En modo vis: cuánto lo empujás y lo saturás."),
         ("impetus", "Velocidad. 50 = el óptico clásico. Más bajo, más suave; más alto, más rápido y con más golpe, y bombea."),
         ("exitus", "Nivel de salida, −18 a +18 dB."),
         ("compressio · limes", "Ratio 3:1 (nivelar suave) o 10:1 (limitar, aplastar)."),
         ("alius", "Escuchar otra pista: la que ruteás a la entrada de sidechain de Pressura en tu DAW."),
-        ("gravis · medius · acutus", "EQ del disparo: cuánto hacen comprimir los graves (40–200 Hz), medios (200 Hz–1 kHz) y agudos (1–20 kHz). Derecha = 0 dB, todo abajo = <span class=led>OFF</span>."),
+        ("Presets", "‹ › para pasar entre 9 presets de fábrica; click en el nombre para la lista. El visor muestra <span class=led>P01</span>–<span class=led>P09</span>; tu DAW también los lista."),
     ],
     tip="Doble click en cualquier control para volverlo a su valor por defecto.",
     use_title="Cómo usarlo",
@@ -99,19 +92,12 @@ TEXT = {
                 ("100", "0.3 ms", "30 ms", "rápido, bombea con el beat")],
     sc_title="Que el bombo agache una pista",
     sc=["Ruteá la batería al <b>sidechain</b> de Pressura en tu DAW. <i>Ableton:</i> sección Sidechain → Audio From. <i>Logic:</i> menú Side Chain. <i>FL Studio:</i> Sidechain to this track. <i>Reaper:</i> send a los canales 3/4. <i>Cubase:</i> botón de side-chain.",
-        "Prendé <b>alius</b> (se prende <span class=led>EXT</span>).",
-        "<b>gravis</b> +6 dB, <b>medius</b> y <b>acutus</b> en OFF: solo el bombo dispara.",
-        "<b>reductio</b> 50–70, <b>impetus</b> 75–90."],
-    recipes_title="Puntos de partida", recipes_head=("Uso", "Perilla roja", "impetus", "Ratio", "Además"),
-    recipes=[("Nivelar voz o bajo", "reductio 40–60", "40–50", "compressio", "—"),
-             ("Pegar el bus master", "reductio 15–30", "30–50", "compressio", "—"),
-             ("Bus de batería que bombea", "vis 50–70", "80–100", "compressio", "vis prendida · mixtura 60–80 %"),
-             ("Aplastado en paralelo", "reductio 80–100", "70–90", "limes", "mixtura 20–40 %"),
-             ("Fuerte y denso", "vis 60–90", "50–70", "limes", "vis prendida · bajá exitus"),
-             ("Bajo que se agacha con el bombo", "reductio 50–70", "75–90", "compressio", "alius · gravis +6 · medius, acutus OFF"),
-             ("Bus que no bombea con el grave", "reductio 20–30", "40–50", "compressio", "gravis −12")],
-    flow_title="Recorrido de la señal",
-    flow=["Entrada", "drive vis", "disparo: propia o alius", "EQ del disparo", "detector", "ganancia", "mixtura", "exitus"],
+        "Cargá el preset <b>Bass Sidechain</b>: prende <b>alius</b> (<span class=led>EXT</span>), así la batería agacha el bajo.",
+        "Girá <b>reductio</b> hasta que el bajo baje 6–10 dB con cada bombo."],
+    recipes_title="Presets", recipes_head=("Preset", "Para"),
+    recipes=[('Vocal Leveler', 'Voces, locución: nivelación óptica suave, unos 3 dB.'), ('Bass Leveler', 'Bajo directo o de sinte: empareja las notas.'), ('Drum Bus Glue', 'Bus de batería, estilo 1176: bombo y graves iguales, las percusiones de atrás suben ~3 dB.'), ('Mix Bus Glue', 'Bus de mezcla: 1–2 dB, pegamento estilo SSL 2:1, mismo volumen.'), ('Parallel Smash', 'Batería o lo que sea: aplastado ~11 dB a 10:1, mezclado al 30 %.'), ('Peak Limiter', 'Lo que sea: 10:1 y rápido, solo agarra los picos.'), ('Drum Bus Pump', 'Bus de batería: drive y saturación vis, bombea como un 1176 con todos los botones.'), ('Crunch', 'Batería, loops, sintes: saturación vis, sucio y denso.'), ('Bass Sidechain', 'El bombo agacha el bajo (~8 dB por golpe). Ruteá la batería al sidechain de Pressura.')],
+    flow_title="La señal",
+    flow=["Entrada", "drive vis", "propia / alius", "detector", "ganancia", "saturación vis", "mixtura", "exitus"],
     warn="Con vis alto e impetus bajo, los transitorios pueden llegar a 0 dBFS: bajá exitus o poné un limitador después de Pressura.",
     footer="Hecho por @gueibrielon · github.com/andesipa/pressura"),
 }
@@ -185,9 +171,9 @@ footer { position: absolute; left: 12mm; right: 12mm; bottom: 5mm; font-family: 
 
 /* Page 1: panel + legend */
 .spread { display: flex; gap: 10mm; }
-.panel-wrap { position: relative; width: 388px; height: 626px; flex: none; transform: scale(.94); transform-origin: top left;
-              margin-right: -23px; margin-bottom: -38px; }
-.panel { width: 388px; height: 626px; display: block; border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+.panel-wrap { position: relative; width: 388px; height: 508px; flex: none; transform: scale(.94); transform-origin: top left;
+              margin-right: -23px; margin-bottom: -30px; }
+.panel { width: 388px; height: 508px; display: block; border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
 .marker { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%;
           background: var(--red); border: 2px solid var(--key-cream); color: var(--key-cream);
           font: bold 12px/18px Georgia, serif; text-align: center; }
@@ -201,8 +187,12 @@ footer { position: absolute; left: 12mm; right: 12mm; bottom: 5mm; font-family: 
 .tip { margin: 2mm 0 0; padding: 3mm 4mm; background: var(--panel-green); color: var(--key-cream); border-radius: 4px; font-size: 13px; }
 
 /* Page 2: cards */
-.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
-.card { border-radius: 5px; padding: 4mm 5mm; font-size: 12.5px; line-height: 1.4; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm 5mm; }
+.grid > .card:nth-child(1) { grid-column: 1; grid-row: 1; }
+.grid > .card:nth-child(2) { grid-column: 1; grid-row: 2; }
+.grid > .card:nth-child(3) { grid-column: 1; grid-row: 3; }
+.grid > .card:nth-child(4) { grid-column: 2; grid-row: 1 / span 3; }
+.card { border-radius: 5px; padding: 3.2mm 5mm; font-size: 12.2px; line-height: 1.36; }
 .card.green { background: var(--panel-green); color: var(--key-cream); }
 .card.screen { background: var(--screen); color: var(--key-cream); }
 .card.screen h3 { color: var(--led); }
@@ -214,9 +204,10 @@ th { font-family: Gothic, serif; font-weight: normal; font-size: 15px; text-alig
 td { padding: 1mm 2mm 1mm 0; vertical-align: top; }
 .speed td, .speed th { border-bottom: 1px solid rgba(232,50,30,.18); }
 .speed .led-cell { font: bold 15px Menlo, monospace; color: var(--led); width: 12mm; }
-.recipes { font-size: 11.2px; }
+.recipes { font-size: 11.4px; }
 .recipes td, .recipes th { border-bottom: 1px solid rgba(42,29,20,.18); }
-.recipes td:nth-child(2), .recipes td:nth-child(3), .recipes td:nth-child(4) { white-space: nowrap; }
+.recipes td:first-child { white-space: nowrap; font-family: Gothic, serif; font-size: 13px; padding-right: 3mm; }
+.recipes td { padding-top: .5mm; padding-bottom: .5mm; }
 .flow { margin-top: 5mm; display: flex; flex-wrap: wrap; align-items: center; gap: 2mm; background: var(--screen);
         padding: 3mm 4mm; border-radius: 5px; }
 .flow-title { font-family: Gothic, serif; font-size: 18px; color: var(--key-cream); margin-right: 3mm; }

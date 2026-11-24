@@ -54,17 +54,15 @@ No Terminal needed: plugins installed by the .pkg are not blocked by macOS.
 | Control | What it does | Range | Default |
 |---|---|---|---|
 | **reductio** (red knob) | How much it compresses. Lowers the threshold and adds automatic make-up gain, so the level stays roughly the same while the dynamics get smaller. | 0–100 (threshold −6 to −48 dB, make-up 0 to +9 dB) | 40 |
-| **vis** (same red knob, when the **vis** key is on) | Drive. Pushes the signal into a fixed −12 dB threshold. Loud parts stay about where they were, quiet parts come up: denser and louder. | 0–100 (0 to +24 dB of drive) | 40 |
+| **vis** (same red knob, when the **vis** key is on) | Drive + saturation. Pushes the signal into a fixed −12 dB threshold (loud parts stay about where they were, quiet parts come up) and through a saturator that gets dirtier as you turn it up, like a sampler pushed into the red. | 0–100 (0 to +24 dB of drive; saturation 0 to +10 dB) | 40 |
 | **impetus** (brown knob) | Speed. Moves attack, release and the detector together. See below. | 0–100 | 50 |
 | **exitus** (cream knob) | Output level, after everything else. | −18 to +18 dB | 0 dB |
 | **mixtura** (fader) | Dry/wet mix for parallel compression. Top = all compressed, bottom (*siccus*, "dry") = untouched. | 0–100 % | 100 % |
 | **compressio** key | Ratio about 3:1 with a soft 8 dB knee. Musical, for levelling. | | on |
 | **limes** key | Ratio about 10:1 with a 3 dB knee. For catching peaks or squashing. | | off |
-| **vis** key (top panel) | Switches the red knob between **reductio** (clean) and **vis** (drive). The knob's label changes with it. | | off |
-| **alius** key (*fons*, "source") | Off: Pressura listens to its own track. On: it listens to the track routed into its **sidechain** input (see below). | | off |
-| **gravis** (low, 40–200 Hz) | How much the lows of the source trigger compression. | OFF, −24 to +12 dB | 0 dB |
-| **medius** (mid, 200 Hz–1 kHz) | How much the mids trigger compression. | OFF, −24 to +12 dB | 0 dB |
-| **acutus** (high, 1–20 kHz) | How much the highs trigger compression. | OFF, −24 to +12 dB | 0 dB |
+| **Preset bar** (top panel) | 9 factory presets plus Default: **‹ ›** step, click the name for the list. | | Default |
+| **vis** key (top panel) | Switches the red knob between **reductio** (clean) and **vis** (drive + saturation). The knob's label changes with it. | | off |
+| **alius** key (*fons alius*, "other source") | Off: Pressura listens to its own track. On: it listens to the track routed into its **sidechain** input (see below). | | off |
 
 **Double-click** any knob or the fader to return it to its default.
 
@@ -82,17 +80,10 @@ release. Half the gain reduction lets go quickly; the rest takes seconds to reco
 compressing, the slower the tail. Above 50 that slow "memory" fades out and the detector switches from
 average to peak level, so the compressor follows each hit and pumps.
 
-### Sidechain and the trigger EQ
+### Sidechain
 
-The bottom row decides **what makes Pressura compress**. The three green knobs are an EQ on the signal the
-compressor *listens to*, not on the sound you hear: the whole track is always compressed.
-
-- All three at 0 dB (straight up): no change, the compressor hears the full signal.
-- Turn a knob all the way down (**OFF**) to make that band ignored completely.
-- Example: Pressura on a bass, triggered by the drum bus. Press **alius**, set **gravis** to +6 dB and
-  **medius** and **acutus** to OFF: only the kick ducks the bass; snares and hats don't.
-- Without **alius**, the same knobs shape your own track: pull **gravis** down so a heavy low end doesn't
-  make the whole mix pump, or push **acutus** up to tame harsh highs.
+With **alius** on, another track decides when Pressura compresses: the classic "bass ducks under the kick".
+The sound you hear is still your own track; it only goes down (no make-up gain), never up.
 
 **Routing the trigger track** (you choose it in your DAW, not in the plugin), then press **alius**:
 - **Ableton Live:** open the Sidechain section on the Pressura device (the small triangle in its title bar) and choose the track under *Audio From*.
@@ -107,8 +98,7 @@ If **alius** is on but nothing is routed, Pressura has nothing to listen to and 
 
 - At rest it shows **PRS**.
 - While you move a control it shows the value. **2 seconds** after you let go, it shows the control's name:
-  **RED** (reductio) or **DRV** (vis), **SPD** (impetus), **OUT** (exitus), **MIX** (mixtura),
-  **LO** / **MID** / **HI** (gravis / medius / acutus; a band turned all the way down shows **OFF**).
+  **RED** (reductio) or **DRV** (vis), **SPD** (impetus), **OUT** (exitus), **MIX** (mixtura).
 - The keys show **CMP** / **LMT**, **VIS** / **CLN** and **EXT** / **INT** when pressed.
 - **EXT** above the meter lights up while the sidechain input is the trigger.
 - **GR** meter: how much the level is being reduced right now, 0 to 20 dB. The *compressio* / *limes* and
@@ -123,13 +113,13 @@ flowchart LR
     IN([Input]) --> DRV["vis drive<br/>0 to +24 dB<br/>(only when vis is on)"]
     SC([Sidechain input]) -. alius on .-> SRC
     DRV -- alius off --> SRC["Trigger source"]
-    SRC --> EQ["Trigger EQ<br/>gravis · medius · acutus<br/>crossovers 200 Hz / 1 kHz"]
-    EQ --> DET["Detector<br/>stereo-linked<br/>RMS → peak with impetus"]
+    SRC --> DET["Detector<br/>stereo-linked<br/>RMS → peak with impetus"]
     DET --> GC["Gain computer<br/>threshold · ratio · knee<br/>compressio 3:1 / limes 10:1"]
     GC --> REL["Attack / two-stage release<br/>set by impetus"]
     REL --> VCA["Gain + make-up"]
     DRV --> VCA
-    VCA --> MIX["mixtura<br/>dry / wet"]
+    VCA --> SAT["vis saturation<br/>(only when vis is on)"]
+    SAT --> MIX["mixtura<br/>dry / wet"]
     IN -- dry --> MIX
     MIX --> OUT["exitus<br/>output level"] --> O([Output])
 ```
@@ -139,24 +129,30 @@ flowchart LR
   change rather than the volume. In *vis* mode the make-up is −drive ÷ ratio: whatever is far above the
   threshold comes out about as loud as it went in, and everything quieter gets louder.
 - **Dry signal** in the *mixtura* blend is always your original input, never driven.
-- **Trigger EQ:** 4th-order Linkwitz-Riley crossovers, so with all three bands at 0 dB they add back up flat;
-  at exactly 0 dB the EQ is bypassed and Pressura sounds the same as without it.
-- **Sidechain input** goes through the same drive (in *vis* mode) and EQ as your own signal would.
+- **vis saturation:** a slightly asymmetric tanh (even harmonics), level-matched so it adds grit, not volume.
+  On a −12 dBFS sine: about 2 % THD at vis 0, 4.5 % at 50, 8 % at 100.
+- **Sidechain input** goes through the same drive (in *vis* mode) as your own signal would; with **alius** there is no make-up.
 - No latency, no oversampling, no lookahead.
 
 ---
 
-## Starting points
+## Presets
 
-| Use | Mode | Red knob | impetus | Ratio | mixtura |
-|---|---|---|---|---|---|
-| Vocal or bass levelling | clean | reductio 40–60 | 40–50 | compressio | 100 % |
-| Mix bus glue | clean | reductio 15–30 | 30–50 | compressio | 100 % |
-| Drum bus that pumps | **vis** | vis 50–70 | 80–100 | compressio | 60–80 % |
-| Parallel smash | clean | reductio 80–100 | 70–90 | limes | 20–40 % |
-| Loud and dense | **vis** | vis 60–90 | 50–70 | limes | 100 %, lower exitus |
-| Bass ducked by the kick | clean, **alius** from drums | reductio 50–70 | 75–90 | compressio | 100 %; gravis +6, medius/acutus OFF |
-| Mix bus that doesn't pump on bass | clean | reductio 20–30 | 40–50 | compressio | 100 %; gravis −12 |
+Use the bar under the title: **‹ ›** step through them, click the name for the list (the display shows
+**P01**–**P09** for 2 s). Your DAW's preset menu lists them too. They're starting points: adjust **reductio** / **vis** to taste.
+
+| Preset | For |
+|---|---|
+| **Default** | Factory settings: the starting point. |
+| **Vocal Leveler** | Vocals, voice-over: smooth optical levelling, about 3 dB. |
+| **Bass Leveler** | DI or synth bass: evens out the notes. |
+| **Drum Bus Glue** | Drum bus, voiced after a 1176-style FET at 4:1 with fast release: about 5 dB on the hits, the kick and low end stay put, quieter percussion and ghost notes come up about 3 dB. |
+| **Mix Bus Glue** | Mix bus: about 1–2 dB, voiced after an SSL-style bus compressor at 2:1; same level in and out. |
+| **Parallel Smash** | Drums or anything: crushed about 11 dB at 10:1 and blended in at 30 %, like a 1176 with all buttons in on a parallel bus. |
+| **Peak Limiter** | Anything: 10:1 and fast, only catches the peaks. |
+| **Drum Bus Pump** | Drum bus: vis drive and saturation, pumps with the beat like a 1176 with all buttons in; same level in and out. |
+| **Crunch** | Drums, loops, synths: vis saturation, dirty and dense. |
+| **Bass Sidechain** | Bass ducked by the kick (~8 dB per hit). Route the drums to Pressura's sidechain. |
 
 With *vis* high and *impetus* low, transients get through before the compressor reacts and can hit 0 dBFS.
 Pull **exitus** down or put a limiter after Pressura.
@@ -192,8 +188,9 @@ The script explains how to sign and notarize it if you have an Apple Developer a
 - `Source/OptoCompressor.h` — the DSP, no JUCE dependency, can be tested on its own
 - `Source/PluginProcessor.*` — parameters and audio processing
 - `Source/PluginEditor.*` — the hand-drawn UI (colours in `Palette`)
-- `Source/SidechainEQ.h` — the trigger EQ, no JUCE dependency
-- `Tests/SidechainTest.cpp` — runs the plugin offline with a sidechain input and checks routing and EQ:
+- `Source/Saturator.h` — the vis saturation, no JUCE dependency
+- `Source/Presets.h` — the factory presets
+- `Tests/SidechainTest.cpp` — runs the plugin offline and checks sidechain routing, vis saturation and presets:
   `cmake --build build --target OPTO2SidechainTest`, then `build/OPTO2SidechainTest_artefacts/Release/OPTO2SidechainTest`
 - `tools/guide/make_guide.py` — builds `docs/Pressura-Guide.pdf` (needs Google Chrome)
 - `Tests/Snapshot.cpp` — renders the UI to a PNG without a DAW:

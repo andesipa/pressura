@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.22)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "")
 set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "")
 
-project(OPTO2 VERSION 0.2.0)
+project(OPTO2 VERSION 0.3.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -70,7 +70,7 @@ target_link_libraries(OPTO2Snapshot
     PRIVATE OPTO2Data juce::juce_audio_utils juce::juce_dsp
     PUBLIC juce::juce_recommended_config_flags)
 
-# Offline sidechain/EQ test: cmake --build build --target OPTO2SidechainTest
+# Offline test (sidechain, vis, presets): cmake --build build --target OPTO2SidechainTest
 juce_add_console_app(OPTO2SidechainTest PRODUCT_NAME "OPTO2SidechainTest")
 target_sources(OPTO2SidechainTest PRIVATE
     Tests/SidechainTest.cpp

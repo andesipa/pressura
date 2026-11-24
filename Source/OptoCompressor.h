@@ -14,7 +14,8 @@
 //    el detector pasa de RMS a pico y el compresor bombea.
 //  - Dos modos de entrada:
 //      clean: Peak Reduction baja el umbral y sube un makeup automático.
-//      vis:   Drive empuja la señal contra un umbral fijo (más denso y más fuerte).
+//      vis:   Drive empuja la señal contra un umbral fijo (más denso y más fuerte);
+//             el procesador le suma la saturación de Saturator.h.
 
 #include <cmath>
 #include <algorithm>
@@ -70,8 +71,8 @@ public:
         updateStatic();
     }
 
-    // Recibe el sidechain (estéreo enlazado) y devuelve la ganancia lineal a aplicar.
-    float process (float left, float right)
+    // Recibe el sidechain (estéreo enlazado) y devuelve la ganancia a aplicar en dB: drive + makeup - reducción
+    float processDb (float left, float right)
     {
         inGainDbSm = inGainDb + gainSmCoef * (inGainDbSm - inGainDb);
         makeupDbSm = makeupDb + gainSmCoef * (makeupDbSm - makeupDb);
@@ -96,7 +97,7 @@ public:
         else                 grSlow = target + slowRelCoef * (grSlow - target);
 
         currentGrDb = std::max (grFast, slowWeight * grSlow);
-        return dbToGain (inGainDbSm + makeupDbSm - currentGrDb);
+        return inGainDbSm + makeupDbSm - currentGrDb;
     }
 
     float getGainReductionDb() const noexcept { return currentGrDb; }
@@ -145,7 +146,6 @@ private:
     }
 
     float timeToCoef (float ms) const { return std::exp (-1.0f / (0.001f * ms * sr)); }
-    static float dbToGain (float db)  { return std::pow (10.0f, db / 20.0f); }
     static float dbToPower (float db) { return std::pow (10.0f, db / 10.0f); }
 
     float sr = 44100.0f;
