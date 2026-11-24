@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds docs/Pressura-Guide.pdf: an illustrated how-to in the plugin's palette and font (English + Spanish).
+"""Builds docs/Pressura-Guide.pdf: an illustrated how-to in the plugin's palette and font (Spanish first, then English).
 
     python3 tools/guide/make_guide.py
 
@@ -64,41 +64,41 @@ TEXT = {
     warn="With vis high and impetus low, transients can hit 0 dBFS: lower exitus or add a limiter after Pressura.",
     footer="Made by @gueibrielon · github.com/andesipa/pressura"),
 "es": dict(
-    lang="es", subtitle="amplificator opticus · guía de uso",
+    lang="es", subtitle="amplificator opticus (amplificador óptico) · guía de uso",
     panel_title="El panel",
     legend=[
-        ("vis", "Drive + saturación. Apagada: la perilla roja es <b>reductio</b>. Prendida: pasa a <b>vis</b>, empuja la señal contra el compresor y la satura, más sucio cuanto más la subís."),
-        ("Visor", "Muestra el valor mientras girás un control; 2 s después, el nombre: <span class=led>RED</span> <span class=led>DRV</span> <span class=led>SPD</span> <span class=led>OUT</span> <span class=led>MIX</span>."),
-        ("Medidor GR", "Cuántos dB se están bajando en este momento (0–20). <span class=led>EXT</span> y <span class=led>VIS</span> se prenden con esos modos."),
-        ("mixtura", "Seco / procesado. Bajalo para compresión en paralelo (<i>siccus</i> = seco)."),
-        ("reductio · vis", "Cuánto comprime (0–100). En modo vis: cuánto lo empujás y lo saturás."),
-        ("impetus", "Velocidad. 50 = el óptico clásico. Más bajo, más suave; más alto, más rápido y con más golpe, y bombea."),
-        ("exitus", "Nivel de salida, −18 a +18 dB."),
-        ("compressio · limes", "Ratio 3:1 (nivelar suave) o 10:1 (limitar, aplastar)."),
-        ("alius", "Escuchar otra pista: la que ruteás a la entrada de sidechain de Pressura en tu DAW."),
-        ("Presets", "‹ › para pasar entre 9 presets de fábrica; click en el nombre para la lista. El visor muestra <span class=led>P01</span>–<span class=led>P09</span>; tu DAW también los lista."),
+        ("vis <span class=tr>(fuerza)</span>", "Tecla de drive + saturación. Apagada: la perilla roja es <b>reductio</b>. Prendida: la perilla pasa a llamarse <b>vis</b>, empuja el sonido contra el compresor y lo ensucia; cuanto más la subís, más sucio."),
+        ("Visor", "Mientras girás un control muestra su valor; 2 segundos después, su nombre: <span class=led>RED</span> reducción, <span class=led>DRV</span> drive, <span class=led>SPD</span> velocidad, <span class=led>OUT</span> salida, <span class=led>MIX</span> mezcla."),
+        ("Medidor GR", "GR = reducción de ganancia: cuántos dB está bajando el compresor en este momento (0 a 20). <span class=led>EXT</span> se prende con alius y <span class=led>VIS</span> con vis."),
+        ("mixtura <span class=tr>(mezcla)</span>", "Cuánto sonido comprimido se mezcla con el original. Arriba: todo comprimido. Abajo (<i>siccus</i> = seco): sin tocar. En el medio: compresión en paralelo."),
+        ("reductio <span class=tr>(reducción)</span>", "Cuánto comprime, de 0 a 100. Con vis prendida: cuánto empuja y satura."),
+        ("impetus <span class=tr>(ímpetu)</span>", "La velocidad del compresor. 50 = el óptico clásico. Más bajo: más suave y lento. Más alto: más rápido, con más golpe, y bombea con el ritmo."),
+        ("exitus <span class=tr>(salida)</span>", "Volumen final, de −18 a +18 dB."),
+        ("compressio · limes <span class=tr>(compresión · límite)</span>", "Cuánto aplasta lo que pasa el umbral: 3:1 para nivelar suave, 10:1 para limitar o aplastar."),
+        ("alius <span class=tr>(otra fuente)</span>", "Pressura deja de escuchar su propia pista y escucha otra: la que mandás a su entrada de sidechain desde tu DAW."),
+        ("Presets", "Ajustes listos para usar. ‹ › para pasar de uno a otro; click en el nombre para ver la lista. El visor muestra <span class=led>P01</span>–<span class=led>P09</span>; tu DAW también los muestra."),
     ],
-    tip="Doble click en cualquier control para volverlo a su valor por defecto.",
+    tip="Doble click en cualquier control para volverlo a su valor original.",
     use_title="Cómo usarlo",
     quick_title="Para empezar",
-    quick=["Poné Pressura en una pista o en un bus.",
-           "Subí <b>reductio</b> hasta que el medidor GR se mueva 3–6 dB en las partes fuertes.",
-           "Ajustá <b>impetus</b>: 50 para suave, 80 o más para golpe y bombeo.",
-           "Igualá el volumen con <b>exitus</b>. Bajá <b>mixtura</b> para compresión en paralelo."],
-    speed_title="impetus", speed_head=("", "ataque", "release", "sonido"),
-    speed_rows=[("0", "30 ms", "lento", "nivelación muy suave"),
-                ("50", "10 ms", "60 ms + cola de 1–3 s", "óptico clásico"),
-                ("75", "1.7 ms", "40 ms", "apretado, agarra transitorios"),
-                ("100", "0.3 ms", "30 ms", "rápido, bombea con el beat")],
-    sc_title="Que el bombo agache una pista",
-    sc=["Ruteá la batería al <b>sidechain</b> de Pressura en tu DAW. <i>Ableton:</i> sección Sidechain → Audio From. <i>Logic:</i> menú Side Chain. <i>FL Studio:</i> Sidechain to this track. <i>Reaper:</i> send a los canales 3/4. <i>Cubase:</i> botón de side-chain.",
-        "Cargá el preset <b>Bass Sidechain</b>: prende <b>alius</b> (<span class=led>EXT</span>), así la batería agacha el bajo.",
-        "Girá <b>reductio</b> hasta que el bajo baje 6–10 dB con cada bombo."],
-    recipes_title="Presets", recipes_head=("Preset", "Para"),
-    recipes=[('Vocal Leveler', 'Voces, locución: nivelación óptica suave, unos 3 dB.'), ('Bass Leveler', 'Bajo directo o de sinte: empareja las notas.'), ('Drum Bus Glue', 'Bus de batería, estilo 1176: bombo y graves iguales, las percusiones de atrás suben ~3 dB.'), ('Mix Bus Glue', 'Bus de mezcla: 1–2 dB, pegamento estilo SSL 2:1, mismo volumen.'), ('Parallel Smash', 'Batería o lo que sea: aplastado ~11 dB a 10:1, mezclado al 30 %.'), ('Peak Limiter', 'Lo que sea: 10:1 y rápido, solo agarra los picos.'), ('Drum Bus Pump', 'Bus de batería: drive y saturación vis, bombea como un 1176 con todos los botones.'), ('Crunch', 'Batería, loops, sintes: saturación vis, sucio y denso.'), ('Bass Sidechain', 'El bombo agacha el bajo (~8 dB por golpe). Ruteá la batería al sidechain de Pressura.')],
+    quick=["Poné Pressura en una pista o en un bus (un grupo de pistas, por ejemplo la batería).",
+           "Subí <b>reductio</b> hasta que el medidor GR marque 3 a 6 dB en las partes fuertes.",
+           "Elegí la velocidad con <b>impetus</b>: 50 para un sonido suave, 80 o más para más golpe y bombeo.",
+           "Igualá el volumen con <b>exitus</b>. Bajá <b>mixtura</b> para mezclar con el sonido original."],
+    speed_title="impetus (velocidad)", speed_head=("", "ataque", "recuperación", "cómo suena"),
+    speed_rows=[("0", "30 ms", "lenta", "nivela muy suave"),
+                ("50", "10 ms", "60 ms + cola de 1 a 3 s", "el óptico clásico"),
+                ("75", "1,7 ms", "40 ms", "apretado, agarra los golpes"),
+                ("100", "0,3 ms", "30 ms", "rápido, bombea con el ritmo")],
+    sc_title="Que el bombo haga bajar otra pista (sidechain)",
+    sc=["En tu DAW, mandá la batería a la entrada de <b>sidechain</b> de Pressura. <i>Ableton:</i> sección Sidechain → Audio From. <i>Logic:</i> menú Side Chain. <i>FL Studio:</i> Sidechain to this track. <i>Reaper:</i> envío a los canales 3/4. <i>Cubase:</i> botón de side-chain.",
+        "Cargá el preset <b>Bass Sidechain</b>: prende <b>alius</b> (en el visor se lee <span class=led>EXT</span>) y la batería hace bajar el bajo.",
+        "Girá <b>reductio</b> hasta que el bajo baje 6 a 10 dB con cada bombo."],
+    recipes_title="Presets de fábrica", recipes_head=("Nombre", "Para qué sirve"),
+    recipes=[('Vocal Leveler', 'Voces y locución: empareja el volumen de forma suave, unos 3 dB.'), ('Bass Leveler', 'Bajo grabado directo o de sinte: empareja el volumen de las notas.'), ('Drum Bus Glue', 'Grupo de batería, al estilo de un 1176: el bombo y los graves quedan iguales y las percusiones de fondo suben unos 3 dB.'), ('Mix Bus Glue', 'Mezcla completa: 1 a 2 dB que "pegan" la mezcla, al estilo de un compresor SSL 2:1, sin cambiar el volumen.'), ('Parallel Smash', 'Batería o lo que sea: una copia muy aplastada (~11 dB a 10:1) mezclada al 30 % con el original.'), ('Peak Limiter', 'Cualquier pista: 10:1 y rápido, solo agarra los picos.'), ('Drum Bus Pump', 'Grupo de batería: drive y saturación vis, bombea con el ritmo como un 1176 con todos los botones apretados.'), ('Crunch', 'Batería, loops y sintes: saturación vis, sucio y denso.'), ('Bass Sidechain', 'El bombo hace bajar el bajo (~8 dB por golpe). Mandá la batería al sidechain de Pressura.')],
     flow_title="La señal",
-    flow=["Entrada", "drive vis", "propia / alius", "detector", "ganancia", "saturación vis", "mixtura", "exitus"],
-    warn="Con vis alto e impetus bajo, los transitorios pueden llegar a 0 dBFS: bajá exitus o poné un limitador después de Pressura.",
+    flow=["entrada", "drive vis", "detector", "compresión", "saturación vis", "mixtura", "exitus"],
+    warn="Con vis alto e impetus bajo, los golpes pueden llegar a 0 dBFS (el máximo antes de distorsionar): bajá exitus o poné un limitador después de Pressura.",
     footer="Hecho por @gueibrielon · github.com/andesipa/pressura"),
 }
 
@@ -114,7 +114,7 @@ def title(text):
 
 def pages(t):
     markers = "".join(f'<div class="marker" style="left:{x}px;top:{y}px">{n}</div>' for n, (x, y) in MARKERS.items())
-    legend = "".join(f'<li><span class="num">{i}</span><div><span class="name">{html.escape(name)}</span> {desc}</div></li>'
+    legend = "".join(f'<li><span class="num">{i}</span><div><span class="name">{name}</span> {desc}</div></li>'
                      for i, (name, desc) in enumerate(t["legend"], 1))
     quick = "".join(f"<li>{s}</li>" for s in t["quick"])
     sc = "".join(f"<li>{s}</li>" for s in t["sc"])
@@ -143,10 +143,9 @@ def pages(t):
     <div class="card green"><h3>{t["quick_title"]}</h3><ol class="steps">{quick}</ol></div>
     <div class="card screen"><h3>{t["speed_title"]}</h3><table class="speed">{speed}</table></div>
     <div class="card green wide-left"><h3>{t["sc_title"]}</h3><ol class="steps">{sc}</ol></div>
-    <div class="card body"><h3>{t["recipes_title"]}</h3><table class="recipes">{recipes}</table></div>
+    <div class="card body"><h3>{t["recipes_title"]}</h3><table class="recipes">{recipes}</table><p class="warn">{t["warn"]}</p></div>
   </div>
   <div class="flow"><span class="flow-title">{t["flow_title"]}</span>{flow}</div>
-  <p class="warn">{t["warn"]}</p>
   <footer>{t["footer"]}</footer>
 </section>"""
 
@@ -183,6 +182,7 @@ footer { position: absolute; left: 12mm; right: 12mm; bottom: 5mm; font-family: 
 .num { flex: none; width: 20px; height: 20px; border-radius: 50%; background: var(--red); color: var(--key-cream);
        font: bold 11px/20px Georgia, serif; text-align: center; margin-top: 1px; }
 .name { font-family: Gothic, serif; font-size: 17px; }
+.tr { font-family: Georgia, serif; font-style: italic; font-size: 12.5px; color: var(--ink-soft); }
 .led { font: bold 10.5px/1 Menlo, monospace; color: var(--led); background: var(--screen); padding: 2px 4px; border-radius: 2px; letter-spacing: .5px; }
 .tip { margin: 2mm 0 0; padding: 3mm 4mm; background: var(--panel-green); color: var(--key-cream); border-radius: 4px; font-size: 13px; }
 
@@ -206,14 +206,14 @@ td { padding: 1mm 2mm 1mm 0; vertical-align: top; }
 .speed .led-cell { font: bold 15px Menlo, monospace; color: var(--led); width: 12mm; }
 .recipes { font-size: 11.4px; }
 .recipes td, .recipes th { border-bottom: 1px solid rgba(42,29,20,.18); }
-.recipes td:first-child { white-space: nowrap; font-family: Gothic, serif; font-size: 13px; padding-right: 3mm; }
+.recipes td:first-child { white-space: nowrap; font-weight: bold; font-size: 11.4px; padding-right: 3mm; }
 .recipes td { padding-top: .5mm; padding-bottom: .5mm; }
 .flow { margin-top: 5mm; display: flex; flex-wrap: wrap; align-items: center; gap: 2mm; background: var(--screen);
         padding: 3mm 4mm; border-radius: 5px; }
 .flow-title { font-family: Gothic, serif; font-size: 18px; color: var(--key-cream); margin-right: 3mm; }
 .stage { font: bold 11px Menlo, monospace; color: var(--led); border: 1px solid rgba(232,50,30,.45); padding: 1.2mm 2mm; border-radius: 3px; }
 .arrow { color: var(--key-cream); }
-.warn { font-size: 11.5px; margin: 3mm 0 0; color: var(--ink-soft); }
+.warn { font-size: 11.5px; margin: 4mm 0 0; padding: 2.5mm 3mm; border-left: 3px solid var(--red); background: rgba(255,255,255,.12); }
 """
 
 PANEL = data_uri(ROOT / "docs" / "pressura.png", "image/png")
@@ -222,8 +222,8 @@ PANEL = data_uri(ROOT / "docs" / "pressura.png", "image/png")
 def main():
     font = data_uri(ROOT / "Resources" / "UnifrakturMaguntia.ttf", "font/ttf")
     css = CSS.replace("FONT", font).replace("TOKENS", CSS_TOKENS)
-    doc = f"""<!doctype html><html><head><meta charset="utf-8"><title>Pressura guide</title><style>{css}</style></head>
-<body>{pages(TEXT["en"])}{pages(TEXT["es"])}</body></html>"""
+    doc = f"""<!doctype html><html><head><meta charset="utf-8"><title>Pressura · guía de uso / user guide</title><style>{css}</style></head>
+<body>{pages(TEXT["es"])}{pages(TEXT["en"])}</body></html>"""
     OUT_HTML.parent.mkdir(parents=True, exist_ok=True)
     OUT_HTML.write_text(doc, encoding="utf-8")
 
